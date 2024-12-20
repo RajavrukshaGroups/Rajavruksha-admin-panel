@@ -1,0 +1,12 @@
+.btn-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.btn-class {
+  width: auto;
+  padding: 0.5rem 1rem; 
+  position: relative; 
+  cursor: pointer;
+}
