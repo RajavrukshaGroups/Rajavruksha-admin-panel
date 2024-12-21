@@ -11,7 +11,9 @@ const BusinessDevelopmentExecutive = () => {
   useEffect(() => {
     const fetchBdeData = async () => {
       try {
-        const response = await fetch("https://server.rajavrukshagroup.in/bdeCareerDetails");
+        const response = await fetch(
+          "https://server.rajavrukshagroup.in/bdeCareerDetails"
+        );
         const data = await response.json();
 
         if (data.success) {

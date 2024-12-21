@@ -4,8 +4,7 @@ import MainHeader from "../MainHeader/mainHeader";
 const MainCareersPage = () => {
   return (
     <div>
-      {/* <h3>Welcome To Careers Page</h3> */}
-      <MainHeader/>
+      <MainHeader />
       <CareersComponent />
     </div>
   );

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import MenuIcon from "@mui/icons-material/Menu";
-import CloseIcon from "@mui/icons-material/Close";  // Import Close icon
+import CloseIcon from "@mui/icons-material/Close";
 import logo from "../../assets/RRPL_Horizontal.png";
 import "./header.css";
 
@@ -8,7 +8,7 @@ const MainHeader = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const toggleMenu = () => {
-    setIsMenuOpen((prev) => !prev); // Toggling the state
+    setIsMenuOpen((prev) => !prev);
   };
 
   return (
@@ -30,7 +30,7 @@ const MainHeader = () => {
         id="dropdown-menu"
       >
         <div className="close-btn" onClick={toggleMenu}>
-          <CloseIcon fontSize="large" style={{color:"white"}}/>
+          <CloseIcon fontSize="large" style={{ color: "white" }} />
         </div>
         <ul>
           <li>
@@ -38,15 +38,6 @@ const MainHeader = () => {
               Careers
             </a>
           </li>
-          {/* <li>
-            <a href="/careers" className="menu-item">
-              Careers
-            </a>
-          </li> <li>
-            <a href="/careers" className="menu-item">
-              Careers
-            </a>
-          </li> */}
         </ul>
       </nav>
     </header>

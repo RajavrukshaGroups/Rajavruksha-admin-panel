@@ -36,7 +36,6 @@ const EditCareerComponent = () => {
         const response = await fetch(
           `https://server.rajavrukshagroup.in/getIndCareer/${id}`
           // `http://localhost:3000/getIndCareer/${id}`
-
         );
         if (response.ok) {
           const result = await response.json();
@@ -163,10 +162,13 @@ const EditCareerComponent = () => {
     });
 
     try {
-      const response = await fetch(`https://server.rajavrukshagroup.in/edit-career/${id}`, {
-        method: "PUT",
-        body: updatedFormData,
-      });
+      const response = await fetch(
+        `https://server.rajavrukshagroup.in/edit-career/${id}`,
+        {
+          method: "PUT",
+          body: updatedFormData,
+        }
+      );
 
       if (response.ok) {
         alert("Career updated successfully!");

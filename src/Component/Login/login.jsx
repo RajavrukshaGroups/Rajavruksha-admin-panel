@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/RRPL_Horizontal.png";
 
-import "./login.css"
+import "./login.css";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -19,10 +19,6 @@ const Login = () => {
   }, [navigate]);
 
   const Signin = async (email, password) => {
-    console.log("Email:", email);
-    console.log("Password:", password);
-
-    // const url = "https://adminpanel-backend-ycn7.vercel.app/login";
     const url = "https://server.rajavrukshagroup.in/login";
     // const url = "http://localhost:3000/login";
     try {

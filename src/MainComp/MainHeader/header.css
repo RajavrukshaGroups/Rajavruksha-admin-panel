@@ -1,113 +1,100 @@
-/* Header Styling */
 .header {
-    background-color: rgba(59, 130, 246, 0.17); /* Light blue background */
-    height: 10rem; /* Height of the header */
-    width: 100%; /* Full width */
-    display: flex; /* Flexbox for alignment */
-    align-items: center; /* Vertically center content */
-    justify-content: space-between; /* Space between logo and menu button */
-    padding: 0 1rem; /* Add horizontal padding */
-    box-sizing: border-box; /* Include padding in width calculation */
-    position: relative; /* Make it the reference for the absolute positioning of dropdown */
-  }
-  
-  .header img {
-    height: 7rem;
-    margin-left: 1rem;
-  }
-  
-  /* Hamburger Button Styling */
+  background-color: rgba(59, 130, 246, 0.17);
+  height: 10rem;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.header img {
+  height: 7rem;
+  margin-left: 1rem;
+}
+
+.hamburger-btn {
+  display: none;
+  cursor: pointer;
+}
+
+.hamburger-btn svg {
+  color: #333;
+}
+
+.close-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  cursor: pointer;
+}
+
+.close-btn svg {
+  color: #333;
+}
+
+.dropdown-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: #333;
+  border-bottom: 1px solid #ccc;
+  z-index: 1000;
+  width: 100%;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+}
+
+.dropdown-menu.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.dropdown-menu ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.dropdown-menu li {
+  margin: 1rem 0;
+}
+
+.dropdown-menu li {
+  color: #ffffff;
+}
+
+.dropdown-menu .menu-item {
+  text-decoration: none;
+  color: #ffffff;
+  display: block;
+  font-weight: bold;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.dropdown-menu .menu-item:hover {
+  background-color: #f1f1f1;
+  color: #333;
+}
+@media (max-width: 768px) {
   .hamburger-btn {
-    display: none; /* Hidden by default */
-    cursor: pointer;
-  }
-  
-  .hamburger-btn svg {
-    color: #333; /* Icon color */
-  }
-  
-  /* Close Button Styling */
-  .close-btn {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    cursor: pointer;
-  }
-  
-  .close-btn svg {
-    color: #333;
-  }
-  
-  /* Dropdown Menu Styling */
-  .dropdown-menu {
-    position: fixed; /* Fixed position to cover the screen */
-    top: 0; /* Align with top of the screen */
-    left: 0; /* Align with left edge */
-    background-color: #333; /* White background */
-    border-bottom: 1px solid #ccc; /* Optional: Border for dropdown */
-    z-index: 1000; /* Ensure it appears above other elements */
-    /*padding: 2rem;  Padding for some space around content */
-    width: 100%; /* Full width of the screen */
-    /* height: 100%;  */
-    opacity: 0; /* Hidden by default */
-    transform: translateY(-10px); /* Slightly move up */
-    transition: opacity 0.3s ease, transform 0.3s ease; /* Smooth transition */
-    pointer-events: none; /* Prevent interaction when hidden */
-  }
-  
-  /* Visible State for Dropdown */
-  .dropdown-menu.visible {
-    opacity: 1; /* Show menu */
-    transform: translateY(0); /* Reset position */
-    pointer-events: auto; /* Enable interaction */
-  }
-  
-  /* Dropdown Items */
-  .dropdown-menu ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    /* text-align: center; */
-  }
-  
-  .dropdown-menu li {
-    margin: 1rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    margin-left: 3rem;
   }
 
-  .dropdown-menu li{
-    color: #ffffff;
+  .dropdown-menu.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
   }
-  
-  .dropdown-menu .menu-item {
-    text-decoration: none;
-    color: #ffffff; /* Dark text */
-    display: block;
-    font-weight: bold;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    transition: background-color 0.3s;
-  }
-  
-  .dropdown-menu .menu-item:hover {
-    background-color: #f1f1f1; /* Highlight on hover */
-    color: #333;
-  }
-  
-  /* Responsive Styling for Small Screens */
-  @media (max-width: 768px) {
-    .hamburger-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-right: 1rem;
-      margin-left: 3rem;
-    }
-  
-    /* Ensure the dropdown menu shows when the 'visible' class is added */
-    .dropdown-menu.visible {
-      opacity: 1;
-      transform: translateY(0);
-      pointer-events: auto;
-    }
-  }
-  
+}

@@ -7,17 +7,16 @@ const CareerDetails = () => {
   const [careers, setCareers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [confirmDelete, setConfirmDelete] = useState(false); // Track delete confirmation
-  const [careerToDelete, setCareerToDelete] = useState(null); // Track which career to delete
-  const [searchQuery, setSearchQuery] = useState(""); // New state for search query
-
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [careerToDelete, setCareerToDelete] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
   useEffect(() => {
     const fetchCareerDetails = async () => {
       try {
-        // const response = await fetch("https://adminpanel-backend-ycn7.vercel.app/getCareers");
-        const response = await fetch("https://server.rajavrukshagroup.in/getCareers");
+        const response = await fetch(
+          "https://server.rajavrukshagroup.in/getCareers"
+        );
         // const response = await fetch("http://localhost:3000/getCareers");
-        // const response = await fetch("https://admin-rajavruksha.vercel.app/getCareers");
         if (!response.ok) {
           throw new Error("Failed to fetch career details");
         }

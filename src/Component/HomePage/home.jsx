@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 
-
 const HomePageComponent = () => {
   return (
     <div>
@@ -11,7 +10,7 @@ const HomePageComponent = () => {
       </div>
       <div>
         <Link to="/careers" className="text-blue-500 hover:underline">
-           Careers Details
+          Careers Details
         </Link>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { useParams,useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 
 const CareerIndDetailPage = () => {
@@ -12,7 +12,6 @@ const CareerIndDetailPage = () => {
   useEffect(() => {
     const fetchCareerDetail = async () => {
       try {
-        // const response=await fetch(`https://admin-rajavruksha.vercel.app/getIndCareer/${id}`)
         const response = await fetch(
           `https://server.rajavrukshagroup.in/getIndCareer/${id}`
           // `http://localhost:3000/getIndCareer/${id}`
@@ -43,9 +42,12 @@ const CareerIndDetailPage = () => {
 
   const handleConfirmDelete = async () => {
     try {
-      const response = await fetch(`https://server.rajavrukshagroup.in/deleteCareer/${id}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `https://server.rajavrukshagroup.in/deleteCareer/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
       if (!response.ok) {
         throw new Error("Failed to delete career");
       }

@@ -47,10 +47,6 @@ const CareersComponent = () => {
 
   const handleInputChange = (e, field) => {
     const { value } = e.target;
-    // let parsedValue = value;
-    // if (field === "salary" || field === "age") {
-    //   parsedValue = value ? parseFloat(value) : "";
-    // }
 
     setErrors((prevErrors) => ({
       ...prevErrors,
@@ -140,14 +136,8 @@ const CareersComponent = () => {
     if (!age) newErrors.age = "Age is required";
     if (!timings) newErrors.timings = "Timings is required";
     if (!link) newErrors.link = "link is required";
-
-    // if (salary && isNaN(salary)) newErrors.salary = "Salary must be a number";
-    // if (age && isNaN(age)) newErrors.age = "Age must be a number";
-
     if (!image) newErrors.image = "Image is required"; // Image validation
-
     if (image) URL.revokeObjectURL(image);
-
     if (Object.keys(newErrors).length === 0) {
       setLoading(true);
       const formData = new FormData();
@@ -181,11 +171,13 @@ const CareersComponent = () => {
       }
 
       try {
-        // const response=await fetch("https://adminpanel-backend-ycn7.vercel.app/newCareer"
-        const response = await fetch("https://server.rajavrukshagroup.in/newCareer", {
-          method: "POST",
-          body: formData,
-        });
+        const response = await fetch(
+          "https://server.rajavrukshagroup.in/newCareer",
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
 
         if (response.ok) {
           alert("Form submitted successfully!");

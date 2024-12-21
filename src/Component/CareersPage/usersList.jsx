@@ -37,14 +37,17 @@ const UserList = () => {
 
   const handleDelete = async () => {
     try {
-      const response = await fetch(`https://server.rajavrukshagroup.in/deleteSubmittedFormData/${userToDelete}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `https://server.rajavrukshagroup.in/deleteSubmittedFormData/${userToDelete}`,
+        {
+          method: "DELETE",
+        }
+      );
       const data = await response.json();
 
       if (data.success) {
         // Remove the user from the UI after successful deletion
-        setUsers(users.filter(user => user._id !== userToDelete));
+        setUsers(users.filter((user) => user._id !== userToDelete));
         setIsModalOpen(false); // Close the modal after successful deletion
       } else {
         console.error("Failed to delete user:", data.message);
@@ -144,8 +147,12 @@ const UserList = () => {
       {isModalOpen && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
           <div className="bg-white p-6 rounded-md w-1/3">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Are you sure?</h2>
-            <p className="text-gray-600 mb-4">Do you really want to delete this user?</p>
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              Are you sure?
+            </h2>
+            <p className="text-gray-600 mb-4">
+              Do you really want to delete this user?
+            </p>
             <div className="flex justify-between gap-4">
               <button
                 className="bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-md py-2 px-4"

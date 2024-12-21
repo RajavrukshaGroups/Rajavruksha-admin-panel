@@ -9,7 +9,9 @@ const AdminDashboard = () => {
   useEffect(() => {
     const fetchCounts = async () => {
       try {
-        const response=await fetch("https://server.rajavrukshagroup.in/careersSubmittedCount")
+        const response = await fetch(
+          "https://server.rajavrukshagroup.in/careersSubmittedCount"
+        );
         // const response = await fetch("http://localhost:3000/careersSubmittedCount");
         const data = await response.json();
         console.log("career-data", data);
@@ -45,7 +47,10 @@ const AdminDashboard = () => {
           <nav className="flex-1 p-4">
             <ul className="space-y-4">
               <li>
-                <a href="/careers" className="block px-4 py-2 hover:bg-gray-700 rounded">
+                <a
+                  href="/careers"
+                  className="block px-4 py-2 hover:bg-gray-700 rounded"
+                >
                   Career
                 </a>
               </li>
@@ -57,25 +62,30 @@ const AdminDashboard = () => {
       {/* Main Content Wrapper */}
       <div className="flex-1 ml-4 mt-4 mr-4">
         <main className="p-6 bg-white shadow-md rounded-lg">
-          <h1 className="text-2xl font-bold text-gray-800 mb-6">Dashboard Overview</h1>
+          <h1 className="text-2xl font-bold text-gray-800 mb-6">
+            Dashboard Overview
+          </h1>
           {loading ? (
             <p className="text-center text-gray-600">Loading...</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {Object.keys(counts).map((title, index) => (
-                title !== "total" && (
-                  <div
-                    key={index}
-                    className="bg-white p-6 shadow rounded-lg cursor-pointer"
-                    onClick={() => navigate(`/users/${title.toLowerCase()}`)}
-                  >
-                    <h2 className="text-xl font-semibold text-gray-800 text-center capitalize">
-                      {title} Submitted Count
-                    </h2>
-                    <p className="mt-2 text-gray-600 text-center font-bold text-4xl">{counts[title]}</p>
-                  </div>
-                )
-              ))}
+              {Object.keys(counts).map(
+                (title, index) =>
+                  title !== "total" && (
+                    <div
+                      key={index}
+                      className="bg-white p-6 shadow rounded-lg cursor-pointer"
+                      onClick={() => navigate(`/users/${title.toLowerCase()}`)}
+                    >
+                      <h2 className="text-xl font-semibold text-gray-800 text-center capitalize">
+                        {title} Submitted Count
+                      </h2>
+                      <p className="mt-2 text-gray-600 text-center font-bold text-4xl">
+                        {counts[title]}
+                      </p>
+                    </div>
+                  )
+              )}
             </div>
           )}
           <div className="p-6">
