@@ -14,7 +14,7 @@ const UserList = () => {
     const fetchUsers = async () => {
       try {
         const response = await fetch(
-          `https://server.rajavrukshagroup.in/getUserByDesignation?designation=${designation}`
+          `https://rrplserver.rajavrukshagroup.in/getUserByDesignation?designation=${designation}`
           // `http://localhost:3000/getUserByDesignation?designation=${designation}`
         );
         const data = await response.json();
@@ -38,7 +38,7 @@ const UserList = () => {
   const handleDelete = async () => {
     try {
       const response = await fetch(
-        `https://server.rajavrukshagroup.in/deleteSubmittedFormData/${userToDelete}`,
+        `https://rrplserver.rajavrukshagroup.in/deleteSubmittedFormData/${userToDelete}`,
         {
           method: "DELETE",
         }

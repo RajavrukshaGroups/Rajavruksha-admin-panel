@@ -10,7 +10,7 @@ const AdminDashboard = () => {
     const fetchCounts = async () => {
       try {
         const response = await fetch(
-          "https://server.rajavrukshagroup.in/careersSubmittedCount"
+          "https://rrplserver.rajavrukshagroup.in/careersSubmittedCount"
         );
         // const response = await fetch("http://localhost:3000/careersSubmittedCount");
         const data = await response.json();

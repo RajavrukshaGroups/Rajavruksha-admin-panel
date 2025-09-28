@@ -19,7 +19,7 @@ const Login = () => {
   }, [navigate]);
 
   const Signin = async (email, password) => {
-    const url = "https://server.rajavrukshagroup.in/login";
+    const url = "https://rrplserver.rajavrukshagroup.in/login";
     // const url = "http://localhost:3000/login";
     try {
       const response = await fetch(url, {

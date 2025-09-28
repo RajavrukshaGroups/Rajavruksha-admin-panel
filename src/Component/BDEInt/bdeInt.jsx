@@ -12,7 +12,8 @@ const BusinessDevelopmentExecutiveIntern = () => {
     const fetchBdeInternData = async () => {
       try {
         const response = await fetch(
-          "https://server.rajavrukshagroup.in/bdeIntCareerDetails"
+          "https://rrplserver.rajavrukshagroup.in//bdeIntCareerDetails"
+          // "https://server.rajavrukshagroup.in/bdeIntCareerDetails"
         );
         const data = await response.json();
 
@@ -34,7 +35,8 @@ const BusinessDevelopmentExecutiveIntern = () => {
   const handleDelete = async () => {
     try {
       const response = await fetch(
-        `https://server.rajavrukshagroup.in/deleteSubmittedFormData/${selectedUserId}`,
+        `https://rrplserver.rajavrukshagroup.in/deleteSubmittedFormData/${selectedUserId}`,
+        // `https://server.rajavrukshagroup.in/deleteSubmittedFormData/${selectedUserId}`,
         {
           method: "DELETE",
         }
