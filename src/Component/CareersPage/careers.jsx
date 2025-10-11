@@ -173,6 +173,8 @@ const CareersComponent = () => {
       try {
         const response = await fetch(
           "https://rrplserver.rajavrukshagroup.in/newCareer",
+          // "http://localhost:3000/newCareer",
+
           {
             method: "POST",
             body: formData,

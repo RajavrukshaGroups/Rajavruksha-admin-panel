@@ -39,6 +39,8 @@ const UserList = () => {
     try {
       const response = await fetch(
         `https://rrplserver.rajavrukshagroup.in/deleteSubmittedFormData/${userToDelete}`,
+        // `http://localhost:3000/deleteSubmittedFormData/${userToDelete}`,
+
         {
           method: "DELETE",
         }

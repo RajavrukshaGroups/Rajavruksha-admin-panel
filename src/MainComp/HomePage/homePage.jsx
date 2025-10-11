@@ -1,18 +1,27 @@
+// AdminDashboard.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+
+// const API_BASE = "http://localhost:3000"; // change if your backend is elsewhere
+const API_BASE = "https://rrplserver.rajavrukshagroup.in";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const [counts, setCounts] = useState({});
   const [loading, setLoading] = useState(true);
 
+  // OTP modal + flow state
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [otpInput, setOtpInput] = useState("");
+  const [otpSending, setOtpSending] = useState(false);
+  const [otpVerifying, setOtpVerifying] = useState(false);
+  const [message, setMessage] = useState("");
+  const [countdown, setCountdown] = useState(0);
+
   useEffect(() => {
     const fetchCounts = async () => {
       try {
-        const response = await fetch(
-          "https://rrplserver.rajavrukshagroup.in/careersSubmittedCount"
-        );
-        // const response = await fetch("http://localhost:3000/careersSubmittedCount");
+        const response = await fetch(`${API_BASE}/careersSubmittedCount`);
         const data = await response.json();
         console.log("career-data", data);
         if (data.success) {
@@ -30,11 +39,78 @@ const AdminDashboard = () => {
     fetchCounts();
   }, []);
 
+  // countdown timer for OTP expiry/resend UI
+  useEffect(() => {
+    if (countdown <= 0) return;
+    const t = setInterval(() => setCountdown((c) => c - 1), 1000);
+    return () => clearInterval(t);
+  }, [countdown]);
+
   const handleLogout = () => {
     localStorage.removeItem("isLoggedIn"); // Clear the login state
     alert("You have been logged out successfully!");
     navigate("/login"); // Redirect to the login page
   };
+
+  // send OTP (server will fallback to ADMIN_EMAIL if contact not provided)
+  // const sendOtp = async (contact) => {
+  //   try {
+  //     setOtpSending(true);
+  //     setMessage("");
+  //     const res = await fetch(`${API_BASE}/admin/send-otp`, {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify(contact ? { contact } : {}),
+  //     });
+  //     const data = await res.json();
+  //     if (data.success) {
+  //       setShowOtpModal(true);
+  //       setOtpInput("");
+  //       setMessage("OTP sent. Check your email.");
+  //       setCountdown(120); // show 2 minute expiry countdown to user
+  //     } else {
+  //       setMessage(data.message || "Failed to send OTP");
+  //     }
+  //   } catch (err) {
+  //     console.error("sendOtp error:", err);
+  //     setMessage("Error sending OTP. Check server.");
+  //   } finally {
+  //     setOtpSending(false);
+  //   }
+  // };
+
+  const sendOtp = async (contact) => {
+    navigate("/admin"); // navigate to AdminMain
+  };
+
+  // verify OTP
+  // const verifyOtp = async (contact) => {
+  //   try {
+  //     setOtpVerifying(true);
+  //     setMessage("");
+  //     const res = await fetch(`${API_BASE}/admin/verify-otp`, {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify(
+  //         contact ? { contact, otp: otpInput } : { otp: otpInput }
+  //       ),
+  //     });
+  //     const data = await res.json();
+  //     if (data.success) {
+  //       localStorage.setItem("isLoggedIn", "true");
+  //       setShowOtpModal(false);
+  //       alert("OTP verified. Welcome!");
+  //       navigate("/admin"); // navigate to AdminMain
+  //     } else {
+  //       setMessage(data.message || "OTP verification failed");
+  //     }
+  //   } catch (err) {
+  //     console.error("verifyOtp error:", err);
+  //     setMessage("Error verifying OTP. Check server.");
+  //   } finally {
+  //     setOtpVerifying(false);
+  //   }
+  // };
 
   return (
     <div className="flex h-screen ">
@@ -54,6 +130,24 @@ const AdminDashboard = () => {
                   Career
                 </a>
               </li>
+              <li>
+                <a
+                  href="/admin"
+                  className="block px-4 py-2 hover:bg-gray-700 rounded"
+                >
+                  Employee Management
+                </a>
+              </li>
+
+              {/* Admin button — sends OTP to the admin email configured on server */}
+              {/* <li>
+                <button
+                  onClick={() => sendOtp()} // no contact => server uses ADMIN_EMAIL env
+                  className="w-full text-left px-4 py-2 hover:bg-gray-700 rounded"
+                >
+                  Employee Management
+                </button>
+              </li> */}
             </ul>
           </nav>
         </aside>
@@ -98,6 +192,71 @@ const AdminDashboard = () => {
           </div>
         </main>
       </div>
+
+      {/* OTP Modal */}
+      {showOtpModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-96">
+            <h3 className="text-lg font-semibold mb-3">Enter OTP</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              We sent a 6-digit OTP to the admin email configured on the server.
+            </p>
+
+            <input
+              type="text"
+              inputMode="numeric"
+              value={otpInput}
+              onChange={(e) =>
+                setOtpInput(e.target.value.replace(/\D/g, "").slice(0, 6))
+              }
+              placeholder="Enter OTP"
+              className="w-full p-2 border rounded mb-3"
+            />
+
+            {message && <p className="text-sm text-red-600 mb-2">{message}</p>}
+
+            <div className="flex items-center justify-between">
+              <div>
+                <button
+                  onClick={() => verifyOtp()}
+                  disabled={otpVerifying || otpInput.length < 6}
+                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded mr-2 disabled:opacity-60"
+                >
+                  {otpVerifying ? "Verifying..." : "Verify OTP"}
+                </button>
+
+                <button
+                  onClick={() => {
+                    setShowOtpModal(false);
+                    setOtpInput("");
+                    setMessage("");
+                  }}
+                  className="bg-gray-200 px-4 py-2 rounded ml-2"
+                >
+                  Cancel
+                </button>
+              </div>
+
+              <div className="text-sm">
+                {countdown > 0 ? (
+                  <span>
+                    Expires in {Math.floor(countdown / 60)}:
+                    {String(countdown % 60).padStart(2, "0")}
+                  </span>
+                ) : (
+                  <button
+                    className="text-blue-600 underline text-sm"
+                    onClick={() => sendOtp()}
+                    disabled={otpSending}
+                  >
+                    {otpSending ? "Resending..." : "Resend OTP"}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

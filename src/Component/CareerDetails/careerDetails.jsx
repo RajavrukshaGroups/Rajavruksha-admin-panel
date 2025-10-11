@@ -15,7 +15,7 @@ const CareerDetails = () => {
       try {
         const response = await fetch(
           "https://rrplserver.rajavrukshagroup.in/getCareers"
-          // "https://server.rajavrukshagroup.in/getCareers"
+          // "http://localhost:3000/getCareers"
         );
         // const response = await fetch("http://localhost:3000/getCareers");
         if (!response.ok) {
@@ -50,8 +50,8 @@ const CareerDetails = () => {
     try {
       const response = await fetch(
         `https://rrplserver.rajavrukshagroup.in/deleteCareer/${careerToDelete}`,
-        // `https://server.rajavrukshagroup.in/deleteCareer/${careerToDelete}`,
-        // `https://adminpanel-backend-ycn7.vercel.app/deleteCareer/${careerToDelete}`,
+        // `http://localhost:3000/deleteCareer/${careerToDelete}`,
+
         {
           method: "DELETE",
         }
