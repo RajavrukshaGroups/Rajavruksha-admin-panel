@@ -2,7 +2,6 @@ import { useState } from "react";
 import "./index.css";
 import AllRoute from "./MainComp/router";
 
-
 function App() {
   return (
     <>

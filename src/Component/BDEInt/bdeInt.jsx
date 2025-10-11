@@ -13,6 +13,7 @@ const BusinessDevelopmentExecutiveIntern = () => {
       try {
         const response = await fetch(
           "https://rrplserver.rajavrukshagroup.in//bdeIntCareerDetails"
+          // "http://localhost:3000/bdeIntCareerDetails"
           // "https://server.rajavrukshagroup.in/bdeIntCareerDetails"
         );
         const data = await response.json();
@@ -34,8 +35,9 @@ const BusinessDevelopmentExecutiveIntern = () => {
   const handleDelete = async () => {
     try {
       const response = await fetch(
-        `https://rrplserver.rajavrukshagroup.in/deleteSubmittedFormData/${selectedUserId}`,
-        // `https://server.rajavrukshagroup.in/deleteSubmittedFormData/${selectedUserId}`,
+        // `https://rrplserver.rajavrukshagroup.in/deleteSubmittedFormData/${selectedUserId}`,
+        `https://localhost:3000/deleteSubmittedFormData/${selectedUserId}`,
+
         {
           method: "DELETE",
         }
