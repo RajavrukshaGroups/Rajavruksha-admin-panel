@@ -1,12 +1,12 @@
 // ViewAdminDept.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import MainHeader from "../../../MainComp/MainHeader/mainHeader";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 // const API_BASE = "http://localhost:3000";
-const API_BASE = "https://rrplserver.rajavrukshagroup.in";
+const API_BASE="https://rrplserver.rajavrukshagroup.in"
 
 const ViewAdminDept = () => {
   const { companyId } = useParams();
@@ -27,53 +27,49 @@ const ViewAdminDept = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editingDeptId, setEditingDeptId] = useState(null);
 
-  //delete state
+  // delete state
   const [deletingId, setDeletingId] = useState(null);
 
-  useEffect(() => {
+  // fetchDepartments: moved out so we can call after creates/updates/deletes
+  const fetchDepartments = useCallback(async () => {
     if (!companyId) {
       setError("Missing company id in the route");
       setLoading(false);
       return;
     }
-
-    const controller = new AbortController();
-    const fetchDepartments = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const res = await fetch(
-          `${API_BASE}/admin/companies/${companyId}/departments`,
-          { signal: controller.signal }
-        );
-        const json = await res.json();
-
-        if (!res.ok) {
-          const msg =
-            json?.message || `Failed to fetch departments (${res.status})`;
-          setError(msg);
-          toast.error(msg);
-          setLoading(false);
-          return;
-        }
-
-        setCompany(json.company || null);
-        setDepartments(Array.isArray(json.departments) ? json.departments : []);
-      } catch (err) {
-        if (err.name === "AbortError") return;
-        console.error("fetch departments error:", err);
-        const msg = err.message || "Server error while fetching departments";
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(
+        `${API_BASE}/admin/companies/${companyId}/departments`
+      );
+      // try/catch for json parse
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const msg =
+          json?.message || `Failed to fetch departments (${res.status})`;
         setError(msg);
-        toast.error(msg);
-      } finally {
+        // toast.error(msg);
         setLoading(false);
+        return;
       }
-    };
 
-    fetchDepartments();
-    return () => controller.abort();
+      setCompany(json.company || null);
+      setDepartments(Array.isArray(json.departments) ? json.departments : []);
+    } catch (err) {
+      console.error("fetch departments error:", err);
+      const msg = err.message || "Server error while fetching departments";
+      setError(msg);
+      toast.error(msg);
+    } finally {
+      setLoading(false);
+    }
   }, [companyId]);
+
+  // initial load
+  useEffect(() => {
+    fetchDepartments();
+  }, [fetchDepartments]);
 
   // Open modal for adding
   const openAddModal = () => {
@@ -124,7 +120,6 @@ const ViewAdminDept = () => {
       });
 
       const json = await res.json().catch(() => ({}));
-
       if (!res.ok) {
         const serverMsg =
           json?.message ||
@@ -136,24 +131,46 @@ const ViewAdminDept = () => {
         return;
       }
 
-      const newDept = json.data || {
-        _id: json._id || `${Date.now()}`,
-        department: name,
-        company: companyId,
-      };
+      // Prefer server-provided new department object; otherwise construct one
+      const newDept =
+        json.data ||
+        (json.department
+          ? json.department
+          : {
+              _id: json._id || `${Date.now()}`, // fallback id
+              department: name,
+              company: companyId,
+            });
 
+      // update local list safely (avoid duplicates by _id or name)
       setDepartments((prev) => {
-        if (prev.some((d) => d.department.toLowerCase() === name.toLowerCase()))
+        // avoid duplicate by id
+        if (prev.some((d) => String(d._id) === String(newDept._id)))
           return prev;
-        return [...prev, newDept].sort((a, b) =>
+        // avoid duplicate by name (case-insensitive)
+        if (
+          prev.some(
+            (d) =>
+              String(d.department).toLowerCase() === String(name).toLowerCase()
+          )
+        )
+          return prev;
+        const next = [...prev, newDept].sort((a, b) =>
           String(a.department).localeCompare(String(b.department))
         );
+        return next;
       });
 
       toast.success(json.message || "Department created");
+
+      // Clear input and close modal (you said "add and close" — closing makes list reflect immediately)
       setDeptInput("");
       setFormError(null);
-      // keep modal open for multiple adds
+      setIsModalOpen(false);
+
+      // Re-fetch from server to make sure list is authoritative (handles ID differences / server constraints)
+      // This guarantees what you see in UI matches server.
+      await fetchDepartments();
     } catch (err) {
       console.error("create dept error", err);
       const msg = err.message || "Server error while creating department";
@@ -210,6 +227,7 @@ const ViewAdminDept = () => {
         company: companyId,
       };
 
+      // Update local list
       setDepartments((prev) =>
         prev
           .map((d) =>
@@ -221,12 +239,15 @@ const ViewAdminDept = () => {
       );
 
       toast.success(json.message || "Department updated");
-      // close modal after update
+
+      // close modal after update and re-fetch authoritative data
       setIsModalOpen(false);
       setDeptInput("");
       setIsEditing(false);
       setEditingDeptId(null);
       setFormError(null);
+
+      await fetchDepartments();
     } catch (err) {
       console.error("update dept error", err);
       const msg = err.message || "Server error while updating department";
@@ -261,9 +282,17 @@ const ViewAdminDept = () => {
         return;
       }
       toast.success(json.message || "Department deleted");
-      setDepartments((prev) => prev.filter((x) => x._id !== dId));
+
+      // optimistic update: remove from local list
+      setDepartments((prev) =>
+        prev.filter((x) => String(x._id) !== String(dId))
+      );
+
       // if we were editing this department, close modal
-      if (isEditing && editingDeptId === dId) closeModal();
+      if (isEditing && String(editingDeptId) === String(dId)) closeModal();
+
+      // re-fetch to be certain
+      await fetchDepartments();
     } catch (err) {
       console.error("delete dept error:", err);
       toast.error("Server error while deleting department");
@@ -298,12 +327,6 @@ const ViewAdminDept = () => {
             >
               Add Department
             </button>
-            {/* <button
-              // onClick={openAddModal}
-              className="inline-flex items-center px-3 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
-            >
-              Add Employee
-            </button> */}
           </div>
         </div>
 
@@ -396,14 +419,6 @@ const ViewAdminDept = () => {
               <h2 className="text-lg font-semibold flex-1">
                 {isEditing ? "Edit Department" : "Add Department"}
               </h2>
-              {/* <button
-                onClick={closeModal}
-                disabled={creating}
-                className="text-gray-500 hover:text-gray-700"
-                aria-label="Close"
-              >
-                ✕
-              </button> */}
             </div>
 
             <form
@@ -448,7 +463,7 @@ const ViewAdminDept = () => {
                       : "Adding..."
                     : isEditing
                     ? "Update"
-                    : "Add & Continue"}
+                    : "Add & Close"}
                 </button>
               </div>
             </form>
@@ -456,7 +471,7 @@ const ViewAdminDept = () => {
             <div className="p-3 border-t text-xs text-gray-500">
               {isEditing
                 ? "Edit the department name and click Update. This will update the department for this company."
-                : "Adding multiple departments? After each successful add the input clears so you can enter another."}
+                : "After adding the department the modal will close and the list refreshes automatically."}
             </div>
           </div>
         </div>

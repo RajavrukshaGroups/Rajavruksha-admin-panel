@@ -1,5 +1,5 @@
 // ViewAdminEmployees.jsx
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import MainHeader from "../../../MainComp/MainHeader/mainHeader";
 import { toast } from "react-toastify";
@@ -84,25 +84,23 @@ const ViewAdminEmployees = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, limit]);
 
-  // fetch employees
-  useEffect(() => {
-    if (!companyId || !deptId) {
-      setError("Missing companyId or deptId");
-      setLoading(false);
-      return;
-    }
+  // fetch employees - extracted so we can call after create/update/delete
+  const fetchEmployees = useCallback(
+    async (pageToUse = page, limitToUse = limit) => {
+      if (!companyId || !deptId) {
+        setError("Missing companyId or deptId");
+        setLoading(false);
+        return;
+      }
 
-    const controller = new AbortController();
-    const fetchEmployees = async () => {
       setLoading(true);
       setError(null);
 
       try {
         const res = await fetch(
-          `${API_BASE}/admin/companies/${companyId}/departments/${deptId}/employees?page=${page}&limit=${limit}&reveal=${String(
+          `${API_BASE}/admin/companies/${companyId}/departments/${deptId}/employees?page=${pageToUse}&limit=${limitToUse}&reveal=${String(
             revealAlways
-          )}`,
-          { signal: controller.signal }
+          )}`
         );
         const json = await res.json().catch(() => ({}));
 
@@ -121,18 +119,10 @@ const ViewAdminEmployees = () => {
         const pagesFromServerRaw = json?.pagination?.pages;
         const pagesFromServer = Number.isFinite(Number(pagesFromServerRaw))
           ? Number(pagesFromServerRaw)
-          : Math.max(1, Math.ceil(totalFromServer / Number(limit) || 1));
+          : Math.max(1, Math.ceil(totalFromServer / Number(limitToUse) || 1));
         setTotal(totalFromServer);
         setPages(Math.max(1, parseInt(String(pagesFromServer), 10)));
-
-        console.info("pagination:", {
-          page,
-          limit,
-          totalFromServer,
-          pagesFromServer,
-        });
       } catch (err) {
-        if (err.name === "AbortError") return;
         console.error("fetch employees error:", err);
         const msg = err.message || "Server error while fetching employees";
         setError(msg);
@@ -140,11 +130,14 @@ const ViewAdminEmployees = () => {
       } finally {
         setLoading(false);
       }
-    };
+    },
+    [companyId, deptId, limit, page, revealAlways]
+  );
 
-    fetchEmployees();
-    return () => controller.abort();
-  }, [companyId, deptId, page, limit]);
+  // initial load & whenever companyId/deptId/page/limit change
+  useEffect(() => {
+    fetchEmployees(page, limit);
+  }, [fetchEmployees, page, limit]);
 
   // open modal for add
   const openAddModal = () => {
@@ -157,7 +150,6 @@ const ViewAdminEmployees = () => {
     setDateOfJoining("");
     setAadhar("");
     setUAN("");
-
     setPfNo("");
     setEsiNo("");
     setBankName("");
@@ -262,44 +254,13 @@ const ViewAdminEmployees = () => {
           return;
         }
 
-        // updated data in json.data
-        const updated = json.data || null;
-        if (updated) {
-          setEmployees((prev) =>
-            prev.map((p) =>
-              String(p._id) === String(updated._id) ? updated : p
-            )
-          );
-        } else {
-          // fallback: optimistic update
-          setEmployees((prev) =>
-            prev.map((p) =>
-              String(p._id) === String(editingEmployeeId)
-                ? {
-                    ...p,
-                    employeeName: payload.employeeName,
-                    employeeId: payload.employeeId,
-                    designation: payload.designation || undefined,
-                    dateOfJoining: payload.dateOfJoining || null,
-                    aadhar: payload.aadhar || undefined,
-                    UAN: payload.UAN || undefined,
-                    pfNo: payload.pfNo || undefined,
-                    esiNo: payload.esiNo || undefined,
-                    bankName: payload.bankName || undefined,
-                    bankBranchName: payload.bankBranchName || undefined,
-                    bankAccountNo: payload.bankAccountNo || undefined,
-                    bankIFSCNo: payload.bankIFSCNo || undefined,
-                    email: payload.email || undefined,
-                    mobileNumber: payload.mobileNumber || undefined,
-                  }
-                : p
-            )
-          );
-        }
-
         toast.success(json.message || "Employee updated");
+
+        // close modal and re-fetch authoritative list for current page
+        setIsModalOpen(false);
+        await fetchEmployees(page, limit);
       } else {
-        // create (POST)
+        // create (POST) — create then go to page 1 and re-fetch to show newly created item
         const res = await fetch(
           `${API_BASE}/admin/companies/${companyId}/departments/${deptId}/employees`,
           {
@@ -320,26 +281,17 @@ const ViewAdminEmployees = () => {
           return;
         }
 
-        const created = json.data || {
-          _id: json._id || `${Date.now()}`,
-          employeeName: payload.employeeName,
-          employeeId: payload.employeeId,
-          designation: payload.designation || undefined,
-          dateOfJoining: payload.dateOfJoining || undefined,
-        };
-
-        setEmployees((prev) => [created, ...prev]);
-        setTotal((prevTotal) => {
-          const newTotal = prevTotal + 1;
-          setPages(Math.max(1, Math.ceil(newTotal / limit)));
-          return newTotal;
-        });
-
         toast.success(json.message || "Employee created");
-      }
 
-      // close modal
-      setIsModalOpen(false);
+        // After create: ensure we are on page 1 so the newly created item is visible
+        setPage(1);
+
+        // re-fetch page 1 to show server-authoritative result
+        await fetchEmployees(1, limit);
+
+        // close modal
+        setIsModalOpen(false);
+      }
     } catch (err) {
       console.error("save employee error:", err);
       const msg = err.message || "Server error while saving employee";
@@ -375,27 +327,20 @@ const ViewAdminEmployees = () => {
         return;
       }
 
-      // remove from UI
-      setEmployees((prev) =>
-        prev.filter((p) => String(p._id) !== String(empId))
-      );
-
-      // update totals/pages
-      setTotal((prevTotal) => {
-        const newTotal = Math.max(0, prevTotal - 1);
-        setPages(Math.max(1, Math.ceil(newTotal / limit)));
-        return newTotal;
-      });
-
       toast.success(json.message || "Employee deleted");
 
-      // if we deleted the last item on the page and now page > 1, go back one page
-      // (so user sees items instead of empty page)
-      setTimeout(() => {
-        if (employees.length === 1 && page > 1) {
-          setPage((p) => Math.max(1, p - 1));
-        }
-      }, 0);
+      // After delete re-fetch current page to keep list and totals consistent
+      // if current page now empty, fetch page-1
+      const newLocal = employees.filter((p) => String(p._id) !== String(empId));
+      const willBeEmpty = newLocal.length === 0 && page > 1;
+      const targetPage = willBeEmpty ? Math.max(1, page - 1) : page;
+
+      // update UI optimistically before refetch
+      setEmployees(newLocal);
+      setTotal((prevTotal) => Math.max(0, prevTotal - 1));
+      if (willBeEmpty) setPage(targetPage);
+
+      await fetchEmployees(targetPage, limit);
     } catch (err) {
       console.error("delete employee error:", err);
       toast.error(err.message || "Server error while deleting employee");
@@ -440,13 +385,6 @@ const ViewAdminEmployees = () => {
           </div>
 
           <div className="flex gap-2">
-            {/* <button
-              onClick={() => navigate(-1)}
-              className="px-3 py-2 rounded bg-gray-100 hover:bg-gray-200"
-            >
-              Back
-            </button> */}
-
             <button
               onClick={openAddModal}
               className="px-3 py-2 rounded bg-green-600 text-white hover:bg-green-700"
@@ -493,9 +431,6 @@ const ViewAdminEmployees = () => {
                       <td className="px-3 py-2">{e.employeeId}</td>
                       <td className="px-3 py-2">{e.designation || "-"}</td>
                       <td className="px-3 py-2">
-                        {/* {e.dateOfJoining
-                          ? new Date(e.dateOfJoining).toLocaleDateString()
-                          : "-"} */}
                         {e.dateOfJoining ? formatDate(e.dateOfJoining) : ""}
                       </td>
                       <td className="px-3 py-2 text-sm text-gray-700">
@@ -600,14 +535,6 @@ const ViewAdminEmployees = () => {
                 <h2 className="text-lg font-semibold">
                   {isEditing ? "Edit Employee" : "Add Employee"}
                 </h2>
-                {/* <button
-                  onClick={closeModal}
-                  disabled={submitting}
-                  className="text-gray-500 hover:text-gray-700"
-                  aria-label="Close"
-                >
-                  ✕
-                </button> */}
               </div>
 
               <div className="p-4 overflow-y-auto">
