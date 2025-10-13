@@ -35,8 +35,8 @@ const BusinessDevelopmentExecutiveIntern = () => {
   const handleDelete = async () => {
     try {
       const response = await fetch(
-        // `https://rrplserver.rajavrukshagroup.in/deleteSubmittedFormData/${selectedUserId}`,
-        `https://localhost:3000/deleteSubmittedFormData/${selectedUserId}`,
+        `https://rrplserver.rajavrukshagroup.in/deleteSubmittedFormData/${selectedUserId}`,
+        // `https://localhost:3000/deleteSubmittedFormData/${selectedUserId}`,
 
         {
           method: "DELETE",

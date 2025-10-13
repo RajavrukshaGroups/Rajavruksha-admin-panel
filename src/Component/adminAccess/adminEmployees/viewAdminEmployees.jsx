@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import MainHeader from "../../../MainComp/MainHeader/mainHeader";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 // const API_BASE = "http://localhost:3000";
@@ -18,6 +18,21 @@ const isoToInputDate = (iso) => {
     return "";
   }
 };
+
+const MONTH_NAMES = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
 
 const ViewAdminEmployees = () => {
   const { companyId, deptId } = useParams();
@@ -46,7 +61,7 @@ const ViewAdminEmployees = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // modal + form state
+  // modal + form state (existing)
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingEmployeeId, setEditingEmployeeId] = useState(null);
@@ -71,6 +86,12 @@ const ViewAdminEmployees = () => {
 
   // track deleting employee ids (array of ids)
   const [deletingIds, setDeletingIds] = useState([]);
+
+  // send accounts modal state (NEW)
+  const [isSendModalOpen, setIsSendModalOpen] = useState(false);
+  const [sendMonth, setSendMonth] = useState(new Date().getMonth() + 1); // 1-12
+  const [sendYear, setSendYear] = useState(new Date().getFullYear());
+  const [sendingAccounts, setSendingAccounts] = useState(false);
 
   // always request decrypted fields server-side
   const revealAlways = true;
@@ -366,9 +387,67 @@ const ViewAdminEmployees = () => {
     return `${day}/${month}/${year}`;
   };
 
+  // --- NEW: open send modal ---
+  const openSendModal = () => {
+    setSendMonth(new Date().getMonth() + 1);
+    setSendYear(new Date().getFullYear());
+    setIsSendModalOpen(true);
+  };
+  const closeSendModal = () => {
+    if (sendingAccounts) return;
+    setIsSendModalOpen(false);
+  };
+
+  // --- NEW: send accounts to accounts endpoint from modal ---
+  const sendAccountsForMonth = async () => {
+    if (!companyId || !deptId) {
+      toast.error("Missing company or department information.");
+      return;
+    }
+
+    try {
+      setSendingAccounts(true);
+      const res = await fetch(
+        `${API_BASE}/sendall/admin/companies/${companyId}/departments/${deptId}/employees`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            payMonth: Number(sendMonth),
+            payYear: Number(sendYear),
+          }),
+        }
+      );
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const msg = json?.message || `Failed to send (${res.status})`;
+        toast.error(msg);
+        return;
+      }
+
+      toast.success(
+        json.message || `Accounts summary emailed to ${json.to || "accounts"}`
+      );
+      setIsSendModalOpen(false);
+    } catch (err) {
+      console.error("send accounts error:", err);
+      toast.error(err.message || "Server error while sending accounts summary");
+    } finally {
+      setSendingAccounts(false);
+    }
+  };
+
+  // build year options (current year -5 .. current year +1)
+  const nowYear = new Date().getFullYear();
+  const years = [];
+  for (let y = nowYear - 5; y <= nowYear + 1; y++) years.push(y);
+
   return (
     <div>
       <MainHeader />
+      {/* Toast container to ensure toast messages show */}
+      <ToastContainer position="top-right" />
+
       <div className="max-w-5xl mx-auto mt-8 p-6 bg-white rounded shadow">
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -384,7 +463,15 @@ const ViewAdminEmployees = () => {
             )}
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-3 items-center">
+            <button
+              onClick={openSendModal}
+              className="px-3 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-700"
+              title="Open modal to select month and send accounts summary"
+            >
+              Initiate Reports
+            </button>
+
             <button
               onClick={openAddModal}
               className="px-3 py-2 rounded bg-green-600 text-white hover:bg-green-700"
@@ -518,7 +605,93 @@ const ViewAdminEmployees = () => {
         )}
       </div>
 
-      {/* Modal (Add / Edit) */}
+      {/* --- SEND REPORTS MODAL (NEW) --- */}
+      {isSendModalOpen && (
+        <div
+          className="fixed inset-0 z-60 flex items-center justify-center px-4 py-6"
+          aria-modal="true"
+          role="dialog"
+        >
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => !sendingAccounts && closeSendModal()}
+          />
+          <div className="relative w-full max-w-md mx-auto bg-white rounded-lg shadow-lg z-10 overflow-hidden">
+            <div className="p-4 border-b flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Send Accounts Report</h3>
+              <button
+                onClick={() => !sendingAccounts && closeSendModal()}
+                className="text-gray-500 hover:text-gray-700"
+                aria-label="Close"
+                disabled={sendingAccounts}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-4 space-y-3">
+              <p className="text-sm text-gray-700">
+                Select month and year for which you want to generate the
+                accounts summary. The report will be sent to accounts (email
+                configured on server).
+              </p>
+
+              <div className="flex gap-3 items-center">
+                <div className="flex flex-col">
+                  <label className="text-sm mb-1">Month</label>
+                  <select
+                    value={sendMonth}
+                    onChange={(e) => setSendMonth(Number(e.target.value))}
+                    className="p-2 border rounded"
+                    disabled={sendingAccounts}
+                  >
+                    {MONTH_NAMES.map((m, idx) => (
+                      <option key={m} value={idx + 1}>
+                        {m}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex flex-col">
+                  <label className="text-sm mb-1">Year</label>
+                  <select
+                    value={sendYear}
+                    onChange={(e) => setSendYear(Number(e.target.value))}
+                    className="p-2 border rounded"
+                    disabled={sendingAccounts}
+                  >
+                    {years.map((y) => (
+                      <option key={y} value={y}>
+                        {y}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  onClick={() => closeSendModal()}
+                  disabled={sendingAccounts}
+                  className="px-3 py-2 rounded bg-gray-200 hover:bg-gray-250"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={sendAccountsForMonth}
+                  disabled={sendingAccounts}
+                  className="px-4 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60"
+                >
+                  {sendingAccounts ? "Sending..." : "Send Report"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal (Add / Edit Employee) */}
       {isModalOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6"
