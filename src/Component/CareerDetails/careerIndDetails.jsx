@@ -45,7 +45,6 @@ const CareerIndDetailPage = () => {
       const response = await fetch(
         `https://rrplserver.rajavrukshagroup.in/deleteCareer/${id}`,
         // `http://localhost:3000/deleteCareer/${id}`,
-
         {
           method: "DELETE",
         }
