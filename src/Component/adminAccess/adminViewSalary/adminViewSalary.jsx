@@ -143,6 +143,7 @@ const AdminViewSalary = () => {
       }
 
       const records = json?.data ?? [];
+      console.log("records", records);
       setSalaryRecords(Array.isArray(records) ? records : []);
       setMeta(
         json?.meta ?? {
@@ -174,6 +175,26 @@ const AdminViewSalary = () => {
     }
   };
 
+  const fetchStoredSalaryDefaults = async () => {
+    try {
+      const res = await fetch(
+        `${API_BASE}/admin/companies/${companyId}/departments/${deptId}/fetchStoredEmpSalary/${employeeId}`
+      );
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        console.warn(
+          "Could not fetch stored salary defaults:",
+          json?.message || res.status
+        );
+        return null;
+      }
+      return json?.data?.salaryDefaults ?? null;
+    } catch (err) {
+      console.error("fetchStoredSalaryDefaults error:", err);
+      return null;
+    }
+  };
+
   useEffect(() => {
     if (!companyId || !deptId || !employeeId) {
       setError("Missing route parameters.");
@@ -190,10 +211,11 @@ const AdminViewSalary = () => {
   const onNext = () => setPage((p) => Math.min(meta.totalPages || 1, p + 1));
   const onBack = () => navigate(-1);
 
-  const openCreate = () => {
+  const openCreate = async () => {
     setIsEditing(false);
     setEditingSalaryId(null);
-    setForm({
+    // base empty form
+    const baseForm = {
       payMonthISO: "",
       basicSalary: "",
       hra: "",
@@ -213,7 +235,50 @@ const AdminViewSalary = () => {
       leaves_taken: "",
       salarySlipNumber: "",
       notes: "",
-    });
+    };
+
+    try {
+      const defaults = await fetchStoredSalaryDefaults();
+      if (defaults) {
+        // convert numbers -> strings so inputs work; keep null/undefined -> ""
+        baseForm.basicSalary =
+          defaults.basicSalary != null ? String(defaults.basicSalary) : "";
+        baseForm.vda = defaults.vda != null ? String(defaults.vda) : "";
+        baseForm.hra = defaults.hra != null ? String(defaults.hra) : "";
+        baseForm.trAllowance =
+          defaults.trAllowance != null ? String(defaults.trAllowance) : "";
+        baseForm.specialAllowance =
+          defaults.specialAllowance != null
+            ? String(defaults.specialAllowance)
+            : "";
+      }
+    } catch (err) {
+      // silent fallback — do not block UI
+      console.warn("Could not prefill salary defaults", err);
+    }
+
+    // setForm({
+    //   payMonthISO: "",
+    //   basicSalary: "",
+    //   hra: "",
+    //   trAllowance: "",
+    //   specialAllowance: "",
+    //   vda: "",
+    //   epf: "",
+    //   esic: "",
+    //   professionalTax: "",
+    //   uniform_deduction: "",
+    //   late_login: "",
+    //   others: "",
+    //   lop: "",
+    //   totalWorkingDays: "",
+    //   lopDays: "",
+    //   paidDays: "",
+    //   leaves_taken: "",
+    //   salarySlipNumber: "",
+    //   notes: "",
+    // });
+    setForm(baseForm);
     setFormError(null);
     setIsModalOpen(true);
     setTimeout(() => firstInputRef.current?.focus(), 70);

@@ -83,6 +83,11 @@ const ViewAdminEmployees = () => {
   const [bankIFSCNo, setBankIFSCNo] = useState("");
   const [email, setEmail] = useState("");
   const [mobileNumber, setMobileNumber] = useState("");
+  const [basicSalary, setBasicSalary] = useState("");
+  const [vda, setVDA] = useState("");
+  const [hra, setHRA] = useState("");
+  const [trAllowance, setTrAllowance] = useState("");
+  const [specialAllowance, setSpecialAllowance] = useState("");
 
   // track deleting employee ids (array of ids)
   const [deletingIds, setDeletingIds] = useState([]);
@@ -177,6 +182,11 @@ const ViewAdminEmployees = () => {
     setBankBranchName("");
     setBankAccountNo("");
     setBankIFSCNo("");
+    setBasicSalary("");
+    setVDA("");
+    setHRA("");
+    setTrAllowance("");
+    setSpecialAllowance("");
     setEmail("");
     setMobileNumber("");
     setIsModalOpen(true);
@@ -200,6 +210,11 @@ const ViewAdminEmployees = () => {
     setBankBranchName(emp.bankBranchName ?? "");
     setBankAccountNo(emp.bankAccountNo ?? "");
     setBankIFSCNo(emp.bankIFSCNo ?? "");
+    setBasicSalary(String(emp.basicSalary ?? ""));
+    setVDA(String(emp.vda ?? ""));
+    setHRA(String(emp.hra ?? ""));
+    setTrAllowance(String(emp.trAllowance ?? ""));
+    setSpecialAllowance(String(emp.specialAllowance ?? ""));
     setEmail(emp.email ?? "");
     setMobileNumber(emp.mobileNumber ?? "");
     setIsModalOpen(true);
@@ -225,11 +240,17 @@ const ViewAdminEmployees = () => {
     e?.preventDefault();
     setFormError(null);
 
-    if (!employeeName.trim()) {
+    // helper: safely coerce any value to trimmed string (returns "" for null/undefined)
+    const asTrimmed = (v) => {
+      if (v === undefined || v === null) return "";
+      return String(v).trim();
+    };
+
+    if (!asTrimmed(employeeName)) {
       setFormError("Employee name is required.");
       return;
     }
-    if (!employeeId.trim()) {
+    if (!asTrimmed(employeeId)) {
       setFormError("Employee ID is required.");
       return;
     }
@@ -238,24 +259,36 @@ const ViewAdminEmployees = () => {
       setSubmitting(true);
 
       const payload = {
-        employeeName: employeeName.trim(),
-        employeeId: employeeId.trim(),
+        employeeName: asTrimmed(employeeName),
+        employeeId: asTrimmed(employeeId),
       };
-      if (designation.trim()) payload.designation = designation.trim();
+      const desigTrim = asTrimmed(designation);
+      if (desigTrim) payload.designation = desigTrim;
       else payload.designation = ""; // allow clearing
-      if (dateOfJoining.trim()) payload.dateOfJoining = dateOfJoining.trim();
+      const dojTrim = asTrimmed(dateOfJoining);
+      if (dojTrim) payload.dateOfJoining = dojTrim;
       else payload.dateOfJoining = "";
+
       // sensitive fields passed as plaintext; backend will encrypt
-      payload.aadhar = aadhar.trim() || "";
-      payload.UAN = UAN.trim() || "";
-      payload.pfNo = pfNo.trim() || "";
-      payload.esiNo = esiNo.trim() || "";
-      payload.bankName = bankName.trim() || "";
-      payload.bankBranchName = bankBranchName.trim() || "";
-      payload.bankAccountNo = bankAccountNo.trim() || "";
-      payload.bankIFSCNo = bankIFSCNo.trim() || "";
-      payload.mobileNumber = mobileNumber.trim() || "";
-      payload.email = email.trim() || "";
+      // sensitive fields passed as plaintext; backend will encrypt
+      payload.aadhar = asTrimmed(aadhar);
+      payload.UAN = asTrimmed(UAN);
+      payload.pfNo = asTrimmed(pfNo);
+      payload.esiNo = asTrimmed(esiNo);
+      payload.bankName = asTrimmed(bankName);
+      payload.bankBranchName = asTrimmed(bankBranchName);
+      payload.bankAccountNo = asTrimmed(bankAccountNo);
+      payload.bankIFSCNo = asTrimmed(bankIFSCNo);
+
+      // salaries — keep empty string if empty
+      payload.basicSalary = asTrimmed(basicSalary);
+      payload.vda = asTrimmed(vda);
+      payload.hra = asTrimmed(hra);
+      payload.trAllowance = asTrimmed(trAllowance);
+      payload.specialAllowance = asTrimmed(specialAllowance);
+
+      payload.mobileNumber = asTrimmed(mobileNumber);
+      payload.email = asTrimmed(email);
 
       if (isEditing && editingEmployeeId) {
         // PUT update
@@ -536,6 +569,16 @@ const ViewAdminEmployees = () => {
                         Account No: {e.bankAccountNo ?? "-"}
                         <br />
                         IFSC NO:{e.bankIFSCNo ?? "-"}
+                        <br />
+                        Basic Salary:{e.basicSalary ?? "-"}
+                        <br />
+                        VDA:{e.vda ?? "-"}
+                        <br />
+                        HRA:{e.hra ?? "-"}
+                        <br />
+                        Travel Allowance:{e.trAllowance ?? "-"}
+                        <br />
+                        Special Allowance:{e.specialAllowance ?? "-"}
                         <br />
                         Email:{e.email ?? "-"}
                         <br />
@@ -898,7 +941,72 @@ const ViewAdminEmployees = () => {
                       />
                     </div>
                   </div>
-
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Basic Salary
+                      </label>
+                      <input
+                        type="number"
+                        value={basicSalary}
+                        onChange={(e) => setBasicSalary(e.target.value)}
+                        className="w-full p-2 border rounded"
+                        disabled={submitting}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        VDA
+                      </label>
+                      <input
+                        type="number"
+                        value={vda}
+                        onChange={(e) => setVDA(e.target.value)}
+                        className="w-full p-2 border rounded"
+                        disabled={submitting}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        HRA
+                      </label>
+                      <input
+                        type="number"
+                        value={hra}
+                        onChange={(e) => setHRA(e.target.value)}
+                        className="w-full p-2 border rounded"
+                        disabled={submitting}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Travel Allowance
+                      </label>
+                      <input
+                        type="number"
+                        value={trAllowance}
+                        onChange={(e) => setTrAllowance(e.target.value)}
+                        className="w-full p-2 border rounded"
+                        disabled={submitting}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Special Allowance
+                      </label>
+                      <input
+                        type="number"
+                        value={specialAllowance}
+                        onChange={(e) => setSpecialAllowance(e.target.value)}
+                        className="w-full p-2 border rounded"
+                        disabled={submitting}
+                      />
+                    </div>
+                  </div>
                   {formError && (
                     <p className="text-xs text-red-600">{formError}</p>
                   )}
