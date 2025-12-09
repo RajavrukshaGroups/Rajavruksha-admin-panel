@@ -5,7 +5,7 @@ import MainHeader from "../../../MainComp/MainHeader/mainHeader";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-// const API_BASE = "http://localhost:3000";
+// const API_BASE = "http://localhost:5000";
 const API_BASE = "https://rrplserver.rajavrukshagroup.in";
 
 const isoToInputDate = (iso) => {
@@ -61,7 +61,7 @@ const ViewAdminEmployees = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // modal + form state (existing)
+  // modal + form state (existing + new fields)
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingEmployeeId, setEditingEmployeeId] = useState(null);
@@ -69,6 +69,7 @@ const ViewAdminEmployees = () => {
   const [formError, setFormError] = useState(null);
   const firstInputRef = useRef(null);
 
+  // existing core fields
   const [employeeName, setEmployeeName] = useState("");
   const [employeeId, setEmployeeId] = useState("");
   const [designation, setDesignation] = useState("");
@@ -88,6 +89,42 @@ const ViewAdminEmployees = () => {
   const [hra, setHRA] = useState("");
   const [trAllowance, setTrAllowance] = useState("");
   const [specialAllowance, setSpecialAllowance] = useState("");
+
+  // --- NEW fields requested by you ---
+  const [nameAsPerAadhar, setNameAsPerAadhar] = useState("");
+  // keep legacy string but also a boolean flag
+  const [status, setStatus] = useState(""); // "working" / "not_working"
+  const [statusWorking, setStatusWorking] = useState(true); // boolean
+  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [dateOfExit, setDateOfExit] = useState("");
+  const [PAN, setPAN] = useState("");
+  const [altmobileNumber, setAltmobileNumber] = useState("");
+  const [currentAddress, setCurrentAddress] = useState("");
+  const [permanentAddress, setPermanentAddress] = useState("");
+  const [bloodGroup, setBloodGroup] = useState("");
+  // marital as text + boolean
+  const [maritalStatus, setMaritalStatus] = useState(""); // "married"/"unmarried"
+  const [isMarried, setIsMarried] = useState(false);
+  const [fatherName, setFatherName] = useState("");
+  const [fatherDOB, setFatherDOB] = useState("");
+  const [fatherAadhar, setFatherAadhar] = useState("");
+  const [motherName, setMotherName] = useState("");
+  const [motherDOB, setMotherDOB] = useState("");
+  const [motherAadhar, setMotherAadhar] = useState("");
+  const [fatherOrSpouseName, setFatherOrSpouseName] = useState("");
+  const [spouseName, setSpouseName] = useState("");
+  const [spouseDOB, setSpouseDOB] = useState("");
+  const [spouseAadhar, setSpouseAadhar] = useState("");
+  const [childrenName, setChildrenName] = useState("");
+  const [childrenAadharNumber, setChildrenAadharNumber] = useState("");
+  const [emergencyContactName, setEmergencyContactName] = useState("");
+  const [emergencyContactNumber, setEmergencyContactNumber] = useState("");
+  const [emergencyContactRelation, setEmergencyContactRelation] = useState("");
+  const [nomineeName, setNomineeName] = useState("");
+  const [nomineeRelationship, setNomineeRelationship] = useState("");
+
+  // collapse toggle for more details
+  const [showMore, setShowMore] = useState(false);
 
   // track deleting employee ids (array of ids)
   const [deletingIds, setDeletingIds] = useState([]);
@@ -129,6 +166,7 @@ const ViewAdminEmployees = () => {
           )}`
         );
         const json = await res.json().catch(() => ({}));
+        console.log("json", json);
 
         if (!res.ok) {
           const msg = json?.message || `Failed to fetch (${res.status})`;
@@ -144,7 +182,7 @@ const ViewAdminEmployees = () => {
         const totalFromServer = Number(json?.pagination?.total ?? 0) || 0;
         const pagesFromServerRaw = json?.pagination?.pages;
         const pagesFromServer = Number.isFinite(Number(pagesFromServerRaw))
-          ? Number(pagesFromServerRaw)
+          ? Number(Number(pagesFromServerRaw))
           : Math.max(1, Math.ceil(totalFromServer / Number(limitToUse) || 1));
         setTotal(totalFromServer);
         setPages(Math.max(1, parseInt(String(pagesFromServer), 10)));
@@ -170,6 +208,8 @@ const ViewAdminEmployees = () => {
     setFormError(null);
     setIsEditing(false);
     setEditingEmployeeId(null);
+
+    // core resets
     setEmployeeName("");
     setEmployeeId("");
     setDesignation("");
@@ -189,15 +229,50 @@ const ViewAdminEmployees = () => {
     setSpecialAllowance("");
     setEmail("");
     setMobileNumber("");
+
+    // new field resets
+    setNameAsPerAadhar("");
+    setStatus("working");
+    setStatusWorking(true);
+    setDateOfBirth("");
+    setDateOfExit("");
+    setPAN("");
+    setAltmobileNumber("");
+    setCurrentAddress("");
+    setPermanentAddress("");
+    setBloodGroup("");
+    setMaritalStatus("unmarried");
+    setIsMarried(false);
+    setFatherName("");
+    setFatherDOB("");
+    setFatherAadhar("");
+    setMotherName("");
+    setMotherDOB("");
+    setMotherAadhar("");
+    setFatherOrSpouseName("");
+    setSpouseName("");
+    setSpouseDOB("");
+    setSpouseAadhar("");
+    setChildrenName("");
+    setChildrenAadharNumber("");
+    setEmergencyContactName("");
+    setEmergencyContactNumber("");
+    setEmergencyContactRelation("");
+    setNomineeName("");
+    setNomineeRelationship("");
+    setShowMore(false);
+
     setIsModalOpen(true);
     setTimeout(() => firstInputRef.current?.focus(), 0);
   };
 
   // open modal for edit (prefill)
   const openEditModal = (emp) => {
+    console.log("emp",emp)
     setFormError(null);
     setIsEditing(true);
     setEditingEmployeeId(emp._id);
+
     setEmployeeName(emp.employeeName ?? "");
     setEmployeeId(emp.employeeId ?? "");
     setDesignation(emp.designation ?? "");
@@ -217,6 +292,52 @@ const ViewAdminEmployees = () => {
     setSpecialAllowance(String(emp.specialAllowance ?? ""));
     setEmail(emp.email ?? "");
     setMobileNumber(emp.mobileNumber ?? "");
+
+    // new field prefills
+    setNameAsPerAadhar(emp.nameAsPerAadhar ?? "");
+    // prefer boolean if backend already stores boolean; else infer from string
+    if (typeof emp.status === "boolean") {
+      setStatusWorking(Boolean(emp.status));
+      setStatus(emp.status ? "working" : "not_working");
+    } else {
+      setStatus(emp.status ?? "working");
+      setStatusWorking((emp.status ?? "working") === "working");
+    }
+
+    setDateOfBirth(isoToInputDate(emp.dateOfBirth));
+    setDateOfExit(isoToInputDate(emp.dateOfExit));
+    setPAN(emp.PAN ?? "");
+    setAltmobileNumber(emp.altmobileNumber ?? "");
+    setCurrentAddress(emp.currentAddress ?? "");
+    setPermanentAddress(emp.permanentAddress ?? "");
+    setBloodGroup(emp.bloodGroup ?? "");
+    if (typeof emp.maritalStatus === "boolean") {
+      setIsMarried(Boolean(emp.maritalStatus));
+      setMaritalStatus(emp.maritalStatus ? "married" : "unmarried");
+    } else {
+      setMaritalStatus(emp.maritalStatus ?? "unmarried");
+      setIsMarried((emp.maritalStatus ?? "unmarried") === "married");
+    }
+
+    setFatherName(emp.fatherName ?? "");
+    setFatherDOB(isoToInputDate(emp.fatherDOB));
+    setFatherAadhar(emp.fatherAadhar ?? "");
+    setMotherName(emp.motherName ?? "");
+    setMotherDOB(isoToInputDate(emp.motherDOB));
+    setMotherAadhar(emp.motherAadhar ?? "");
+    setFatherOrSpouseName(emp.fatherOrSpouseName ?? "");
+    setSpouseName(emp.spouseName ?? "");
+    setSpouseDOB(isoToInputDate(emp.spouseDOB));
+    setSpouseAadhar(emp.spouseAadhar ?? "");
+    setChildrenName(emp.childrenName ?? "");
+    setChildrenAadharNumber(emp.childrenAadharNumber ?? "");
+    setEmergencyContactName(emp.emergencyContactName ?? "");
+    setEmergencyContactNumber(emp.emergencyContactNumber ?? "");
+    setEmergencyContactRelation(emp.emergencyContactRelation ?? "");
+    setNomineeName(emp.nomineeName ?? "");
+    setNomineeRelationship(emp.nomineeRelationship ?? "");
+
+    setShowMore(false);
     setIsModalOpen(true);
     setTimeout(() => firstInputRef.current?.focus(), 0);
   };
@@ -255,6 +376,18 @@ const ViewAdminEmployees = () => {
       return;
     }
 
+    // basic validations for mobile numbers
+    const mobileTrim = asTrimmed(mobileNumber);
+    if (!/^[0-9]{10}$/.test(mobileTrim)) {
+      setFormError("Valid 10-digit mobile number is required.");
+      return;
+    }
+    const altTrim = asTrimmed(altmobileNumber);
+    if (!/^[0-9]{10}$/.test(altTrim)) {
+      setFormError("Valid 10-digit alternative mobile number is required.");
+      return;
+    }
+
     try {
       setSubmitting(true);
 
@@ -262,14 +395,48 @@ const ViewAdminEmployees = () => {
         employeeName: asTrimmed(employeeName),
         employeeId: asTrimmed(employeeId),
       };
-      const desigTrim = asTrimmed(designation);
-      if (desigTrim) payload.designation = desigTrim;
-      else payload.designation = ""; // allow clearing
-      const dojTrim = asTrimmed(dateOfJoining);
-      if (dojTrim) payload.dateOfJoining = dojTrim;
-      else payload.dateOfJoining = "";
 
-      // sensitive fields passed as plaintext; backend will encrypt
+      // optional fields
+      payload.designation = asTrimmed(designation);
+      payload.dateOfJoining = asTrimmed(dateOfJoining);
+      payload.dateOfBirth = asTrimmed(dateOfBirth);
+      payload.dateOfExit = asTrimmed(dateOfExit);
+
+      // new requested fields
+      payload.nameAsPerAadhar = asTrimmed(nameAsPerAadhar);
+
+      // status: keep string and boolean flag for backend compatibility
+      payload.status = statusWorking ? "working" : "not_working";
+      payload.statusWorking = Boolean(statusWorking);
+
+      payload.PAN = asTrimmed(PAN); // backend will encrypt
+      payload.altmobileNumber = altTrim;
+      payload.currentAddress = asTrimmed(currentAddress);
+      payload.permanentAddress = asTrimmed(permanentAddress);
+      payload.bloodGroup = asTrimmed(bloodGroup);
+
+      // marital: both string & boolean
+      payload.maritalStatus = isMarried ? "married" : "unmarried";
+      payload.isMarried = Boolean(isMarried);
+
+      payload.fatherName = asTrimmed(fatherName);
+      payload.fatherDOB = asTrimmed(fatherDOB);
+      payload.fatherAadhar = asTrimmed(fatherAadhar);
+      payload.motherName = asTrimmed(motherName);
+      payload.motherDOB = asTrimmed(motherDOB);
+      payload.motherAadhar = asTrimmed(motherAadhar);
+      payload.fatherOrSpouseName = asTrimmed(fatherOrSpouseName);
+      payload.spouseName = asTrimmed(spouseName);
+      payload.spouseDOB = asTrimmed(spouseDOB);
+      payload.spouseAadhar = asTrimmed(spouseAadhar);
+      payload.childrenName = asTrimmed(childrenName);
+      payload.childrenAadharNumber = asTrimmed(childrenAadharNumber);
+      payload.emergencyContactName = asTrimmed(emergencyContactName);
+      payload.emergencyContactNumber = asTrimmed(emergencyContactNumber);
+      payload.emergencyContactRelation = asTrimmed(emergencyContactRelation);
+      payload.nomineeName = asTrimmed(nomineeName);
+      payload.nomineeRelationship = asTrimmed(nomineeRelationship);
+
       // sensitive fields passed as plaintext; backend will encrypt
       payload.aadhar = asTrimmed(aadhar);
       payload.UAN = asTrimmed(UAN);
@@ -287,7 +454,7 @@ const ViewAdminEmployees = () => {
       payload.trAllowance = asTrimmed(trAllowance);
       payload.specialAllowance = asTrimmed(specialAllowance);
 
-      payload.mobileNumber = asTrimmed(mobileNumber);
+      payload.mobileNumber = mobileTrim;
       payload.email = asTrimmed(email);
 
       if (isEditing && editingEmployeeId) {
@@ -314,7 +481,7 @@ const ViewAdminEmployees = () => {
         setIsModalOpen(false);
         await fetchEmployees(page, limit);
       } else {
-        // create (POST) — create then go to page 1 and re-fetch to show newly created item
+        // create (POST)
         const res = await fetch(
           `${API_BASE}/admin/companies/${companyId}/departments/${deptId}/employees`,
           {
@@ -337,13 +504,8 @@ const ViewAdminEmployees = () => {
 
         toast.success(json.message || "Employee created");
 
-        // After create: ensure we are on page 1 so the newly created item is visible
         setPage(1);
-
-        // re-fetch page 1 to show server-authoritative result
         await fetchEmployees(1, limit);
-
-        // close modal
         setIsModalOpen(false);
       }
     } catch (err) {
@@ -356,7 +518,7 @@ const ViewAdminEmployees = () => {
     }
   };
 
-  // DELETE handler
+  // DELETE handler (unchanged)
   const handleDeleteEmployee = async (empId) => {
     if (!empId) return;
     const ok = window.confirm(
@@ -364,7 +526,6 @@ const ViewAdminEmployees = () => {
     );
     if (!ok) return;
 
-    // mark as deleting
     setDeletingIds((prev) => [...prev, empId]);
 
     try {
@@ -383,13 +544,10 @@ const ViewAdminEmployees = () => {
 
       toast.success(json.message || "Employee deleted");
 
-      // After delete re-fetch current page to keep list and totals consistent
-      // if current page now empty, fetch page-1
       const newLocal = employees.filter((p) => String(p._id) !== String(empId));
       const willBeEmpty = newLocal.length === 0 && page > 1;
       const targetPage = willBeEmpty ? Math.max(1, page - 1) : page;
 
-      // update UI optimistically before refetch
       setEmployees(newLocal);
       setTotal((prevTotal) => Math.max(0, prevTotal - 1));
       if (willBeEmpty) setPage(targetPage);
@@ -399,7 +557,6 @@ const ViewAdminEmployees = () => {
       console.error("delete employee error:", err);
       toast.error(err.message || "Server error while deleting employee");
     } finally {
-      // remove empId from deletingIds
       setDeletingIds((prev) => prev.filter((id) => id !== empId));
     }
   };
@@ -478,7 +635,6 @@ const ViewAdminEmployees = () => {
   return (
     <div>
       <MainHeader />
-      {/* Toast container to ensure toast messages show */}
       <ToastContainer position="top-right" />
 
       <div className="max-w-5xl mx-auto mt-8 p-6 bg-white rounded shadow">
@@ -558,31 +714,45 @@ const ViewAdminEmployees = () => {
                         <br />
                         Aadhar: {e.aadhar ?? "-"}
                         <br />
+                        PAN: {e.PAN ?? "-"}
+                        <br />
                         PF: {e.pfNo ?? "-"}
                         <br />
                         ESI: {e.esiNo ?? "-"}
                         <br />
                         Bank: {e.bankName ?? "-"}
                         <br />
-                        Branch Name:{e.bankBranchName ?? "-"}
+                        Branch Name: {e.bankBranchName ?? "-"}
                         <br />
                         Account No: {e.bankAccountNo ?? "-"}
                         <br />
-                        IFSC NO:{e.bankIFSCNo ?? "-"}
+                        IFSC NO: {e.bankIFSCNo ?? "-"}
                         <br />
-                        Basic Salary:{e.basicSalary ?? "-"}
+                        Basic Salary: {e.basicSalary ?? "-"}
                         <br />
-                        VDA:{e.vda ?? "-"}
+                        VDA: {e.vda ?? "-"}
                         <br />
-                        HRA:{e.hra ?? "-"}
+                        HRA: {e.hra ?? "-"}
                         <br />
-                        Travel Allowance:{e.trAllowance ?? "-"}
+                        Travel Allowance: {e.trAllowance ?? "-"}
                         <br />
-                        Special Allowance:{e.specialAllowance ?? "-"}
+                        Special Allowance: {e.specialAllowance ?? "-"}
                         <br />
-                        Email:{e.email ?? "-"}
+                        Email: {e.email ?? "-"}
                         <br />
-                        Mobile:{e.mobileNumber ?? "-"}
+                        Mobile: {e.mobileNumber ?? "-"}
+                        <br />
+                        Alt Mobile: {e.altmobileNumber ?? "-"}
+                        <br />
+                        DOB: {e.dateOfBirth ? formatDate(e.dateOfBirth) : "-"}
+                        <br />
+                        Current Addr: {e.currentAddress ?? "-"}
+                        <br />
+                        Emergency: {e.emergencyContactName ?? "-"} /{" "}
+                        {e.emergencyContactNumber ?? "-"}
+                        <br />
+                        Nominee: {e.nomineeName ?? "-"} (
+                        {e.nomineeRelationship ?? "-"})
                       </td>
                       <td className="px-3 py-2">
                         <div className="flex gap-2">
@@ -648,7 +818,7 @@ const ViewAdminEmployees = () => {
         )}
       </div>
 
-      {/* --- SEND REPORTS MODAL (NEW) --- */}
+      {/* SEND REPORTS MODAL */}
       {isSendModalOpen && (
         <div
           className="fixed inset-0 z-60 flex items-center justify-center px-4 py-6"
@@ -769,46 +939,159 @@ const ViewAdminEmployees = () => {
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Employee ID *
-                    </label>
-                    <input
-                      type="text"
-                      value={employeeId}
-                      onChange={(e) => setEmployeeId(e.target.value)}
-                      className="w-full p-2 border rounded"
-                      disabled={submitting}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Email *
-                    </label>
-                    <input
-                      type="text"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full p-2 border rounded"
-                      disabled={submitting}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Mobile Number *
-                    </label>
-                    <input
-                      type="number"
-                      value={mobileNumber}
-                      onChange={(e) => setMobileNumber(e.target.value)}
-                      className="w-full p-2 border rounded"
-                      disabled={submitting}
-                    />
-                  </div>
-
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Employee ID *
+                      </label>
+                      <input
+                        type="text"
+                        value={employeeId}
+                        onChange={(e) => setEmployeeId(e.target.value)}
+                        className="w-full p-2 border rounded"
+                        disabled={submitting}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Name as per Aadhar
+                      </label>
+                      <input
+                        type="text"
+                        value={nameAsPerAadhar}
+                        onChange={(e) => setNameAsPerAadhar(e.target.value)}
+                        className="w-full p-2 border rounded"
+                        disabled={submitting}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Email + Mobile */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Email *
+                      </label>
+                      <input
+                        type="text"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="w-full p-2 border rounded"
+                        disabled={submitting}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Mobile Number *
+                      </label>
+                      <input
+                        type="number"
+                        value={mobileNumber}
+                        onChange={(e) => setMobileNumber(e.target.value)}
+                        className="w-full p-2 border rounded"
+                        disabled={submitting}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Status radios (working / not working) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Employment Status
+                      </label>
+                      <div className="flex gap-4 items-center">
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name="statusWorking"
+                            checked={statusWorking === true}
+                            onChange={() => {
+                              setStatusWorking(true);
+                              setStatus("working");
+                            }}
+                          />
+                          <span>Working</span>
+                        </label>
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name="statusWorking"
+                            checked={statusWorking === false}
+                            onChange={() => {
+                              setStatusWorking(false);
+                              setStatus("not_working");
+                            }}
+                          />
+                          <span>Not working</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Marital status radios */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Marital Status
+                      </label>
+                      <div className="flex gap-4 items-center">
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name="isMarried"
+                            checked={isMarried === true}
+                            onChange={() => {
+                              setIsMarried(true);
+                              setMaritalStatus("married");
+                            }}
+                          />
+                          <span>Married</span>
+                        </label>
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name="isMarried"
+                            checked={isMarried === false}
+                            onChange={() => {
+                              setIsMarried(false);
+                              setMaritalStatus("unmarried");
+                            }}
+                          />
+                          <span>Unmarried</span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* small row: alt mobile + PAN */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Alternative Mobile *
+                      </label>
+                      <input
+                        type="text"
+                        value={altmobileNumber}
+                        onChange={(e) => setAltmobileNumber(e.target.value)}
+                        className="w-full p-2 border rounded"
+                        disabled={submitting}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        PAN
+                      </label>
+                      <input
+                        type="text"
+                        value={PAN}
+                        onChange={(e) => setPAN(e.target.value)}
+                        className="w-full p-2 border rounded"
+                        disabled={submitting}
+                      />
+                    </div>
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Designation
@@ -821,7 +1104,10 @@ const ViewAdminEmployees = () => {
                         disabled={submitting}
                       />
                     </div>
+                  </div>
 
+                  {/* Date join / DOB / exit */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Date of joining
@@ -834,8 +1120,33 @@ const ViewAdminEmployees = () => {
                         disabled={submitting}
                       />
                     </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Date of Birth
+                      </label>
+                      <input
+                        type="date"
+                        value={dateOfBirth}
+                        onChange={(e) => setDateOfBirth(e.target.value)}
+                        className="w-full p-2 border rounded"
+                        disabled={submitting}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Date of Exit
+                      </label>
+                      <input
+                        type="date"
+                        value={dateOfExit}
+                        onChange={(e) => setDateOfExit(e.target.value)}
+                        className="w-full p-2 border rounded"
+                        disabled={submitting}
+                      />
+                    </div>
                   </div>
 
+                  {/* Aadhar / UAN / PF / ESI */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -888,6 +1199,7 @@ const ViewAdminEmployees = () => {
                     </div>
                   </div>
 
+                  {/* Bank details */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -941,6 +1253,272 @@ const ViewAdminEmployees = () => {
                       />
                     </div>
                   </div>
+
+                  {/* toggle more details */}
+                  <div className="pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowMore((s) => !s)}
+                      className="text-sm text-white-600 hover:underline"
+                    >
+                      {showMore ? "Hide more details ▲" : "Show more details ▼"}
+                    </button>
+                  </div>
+
+                  {/* More details - collapsed by default */}
+                  {showMore && (
+                    <>
+                      {/* Addresses */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Current Address
+                          </label>
+                          <textarea
+                            value={currentAddress}
+                            onChange={(e) => setCurrentAddress(e.target.value)}
+                            className="w-full p-2 border rounded"
+                            rows={3}
+                            disabled={submitting}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Permanent Address
+                          </label>
+                          <textarea
+                            value={permanentAddress}
+                            onChange={(e) =>
+                              setPermanentAddress(e.target.value)
+                            }
+                            className="w-full p-2 border rounded"
+                            rows={3}
+                            disabled={submitting}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Family / emergency */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Father Name
+                          </label>
+                          <input
+                            type="text"
+                            value={fatherName}
+                            onChange={(e) => setFatherName(e.target.value)}
+                            className="w-full p-2 border rounded"
+                            disabled={submitting}
+                          />
+                          <label className="block text-sm font-medium text-gray-700 mb-1 mt-2">
+                            Father DOB
+                          </label>
+                          <input
+                            type="date"
+                            value={fatherDOB}
+                            onChange={(e) => setFatherDOB(e.target.value)}
+                            className="w-full p-2 border rounded"
+                            disabled={submitting}
+                          />
+                          <label className="block text-sm font-medium text-gray-700 mb-1 mt-2">
+                            Father Aadhar
+                          </label>
+                          <input
+                            type="text"
+                            value={fatherAadhar}
+                            onChange={(e) => setFatherAadhar(e.target.value)}
+                            className="w-full p-2 border rounded"
+                            disabled={submitting}
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Mother Name
+                          </label>
+                          <input
+                            type="text"
+                            value={motherName}
+                            onChange={(e) => setMotherName(e.target.value)}
+                            className="w-full p-2 border rounded"
+                            disabled={submitting}
+                          />
+                          <label className="block text-sm font-medium text-gray-700 mb-1 mt-2">
+                            Mother DOB
+                          </label>
+                          <input
+                            type="date"
+                            value={motherDOB}
+                            onChange={(e) => setMotherDOB(e.target.value)}
+                            className="w-full p-2 border rounded"
+                            disabled={submitting}
+                          />
+                          <label className="block text-sm font-medium text-gray-700 mb-1 mt-2">
+                            Mother Aadhar
+                          </label>
+                          <input
+                            type="text"
+                            value={motherAadhar}
+                            onChange={(e) => setMotherAadhar(e.target.value)}
+                            className="w-full p-2 border rounded"
+                            disabled={submitting}
+                          />
+                        </div>
+                      </div>
+
+                      {/* spouse / children / emergency / nominee */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Spouse Name
+                          </label>
+                          <input
+                            type="text"
+                            value={spouseName}
+                            onChange={(e) => setSpouseName(e.target.value)}
+                            className="w-full p-2 border rounded"
+                            disabled={submitting}
+                          />
+                          <label className="block text-sm font-medium text-gray-700 mb-1 mt-2">
+                            Spouse DOB
+                          </label>
+                          <input
+                            type="date"
+                            value={spouseDOB}
+                            onChange={(e) => setSpouseDOB(e.target.value)}
+                            className="w-full p-2 border rounded"
+                            disabled={submitting}
+                          />
+                          <label className="block text-sm font-medium text-gray-700 mb-1 mt-2">
+                            Spouse Aadhar
+                          </label>
+                          <input
+                            type="text"
+                            value={spouseAadhar}
+                            onChange={(e) => setSpouseAadhar(e.target.value)}
+                            className="w-full p-2 border rounded"
+                            disabled={submitting}
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Children Name(s)
+                          </label>
+                          <input
+                            type="text"
+                            value={childrenName}
+                            onChange={(e) => setChildrenName(e.target.value)}
+                            className="w-full p-2 border rounded"
+                            disabled={submitting}
+                          />
+                          <label className="block text-sm font-medium text-gray-700 mb-1 mt-2">
+                            Children Aadhar Number(s)
+                          </label>
+                          <input
+                            type="text"
+                            value={childrenAadharNumber}
+                            onChange={(e) =>
+                              setChildrenAadharNumber(e.target.value)
+                            }
+                            className="w-full p-2 border rounded"
+                            disabled={submitting}
+                          />
+                          <label className="block text-sm font-medium text-gray-700 mb-1 mt-2">
+                            Father or Spouse Name (for records)
+                          </label>
+                          <input
+                            type="text"
+                            value={fatherOrSpouseName}
+                            onChange={(e) =>
+                              setFatherOrSpouseName(e.target.value)
+                            }
+                            className="w-full p-2 border rounded"
+                            disabled={submitting}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Emergency Contact Name
+                          </label>
+                          <input
+                            type="text"
+                            value={emergencyContactName}
+                            onChange={(e) =>
+                              setEmergencyContactName(e.target.value)
+                            }
+                            className="w-full p-2 border rounded"
+                            disabled={submitting}
+                          />
+                          <label className="block text-sm font-medium text-gray-700 mb-1 mt-2">
+                            Emergency Contact Number
+                          </label>
+                          <input
+                            type="text"
+                            value={emergencyContactNumber}
+                            onChange={(e) =>
+                              setEmergencyContactNumber(e.target.value)
+                            }
+                            className="w-full p-2 border rounded"
+                            disabled={submitting}
+                          />
+                          <label className="block text-sm font-medium text-gray-700 mb-1 mt-2">
+                            Emergency Relation
+                          </label>
+                          <input
+                            type="text"
+                            value={emergencyContactRelation}
+                            onChange={(e) =>
+                              setEmergencyContactRelation(e.target.value)
+                            }
+                            className="w-full p-2 border rounded"
+                            disabled={submitting}
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Nominee Name
+                          </label>
+                          <input
+                            type="text"
+                            value={nomineeName}
+                            onChange={(e) => setNomineeName(e.target.value)}
+                            className="w-full p-2 border rounded"
+                            disabled={submitting}
+                          />
+                          <label className="block text-sm font-medium text-gray-700 mb-1 mt-2">
+                            Nominee Relationship
+                          </label>
+                          <input
+                            type="text"
+                            value={nomineeRelationship}
+                            onChange={(e) =>
+                              setNomineeRelationship(e.target.value)
+                            }
+                            className="w-full p-2 border rounded"
+                            disabled={submitting}
+                          />
+                          <label className="block text-sm font-medium text-gray-700 mb-1 mt-2">
+                            Blood Group
+                          </label>
+                          <input
+                            type="text"
+                            value={bloodGroup}
+                            onChange={(e) => setBloodGroup(e.target.value)}
+                            className="w-full p-2 border rounded"
+                            disabled={submitting}
+                          />
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Salary fields kept as before */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -967,6 +1545,7 @@ const ViewAdminEmployees = () => {
                       />
                     </div>
                   </div>
+
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -993,6 +1572,7 @@ const ViewAdminEmployees = () => {
                       />
                     </div>
                   </div>
+
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1007,6 +1587,7 @@ const ViewAdminEmployees = () => {
                       />
                     </div>
                   </div>
+
                   {formError && (
                     <p className="text-xs text-red-600">{formError}</p>
                   )}

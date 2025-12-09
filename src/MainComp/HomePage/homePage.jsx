@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-// const API_BASE = "http://localhost:3000"; // change if your backend is elsewhere
+// const API_BASE = "http://localhost:5000"; // change if your backend is elsewhere
 const API_BASE = "https://rrplserver.rajavrukshagroup.in";
 
 const AdminDashboard = () => {

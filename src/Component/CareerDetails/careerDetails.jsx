@@ -15,7 +15,7 @@ const CareerDetails = () => {
       try {
         const response = await fetch(
           "https://rrplserver.rajavrukshagroup.in/getCareers"
-          // "http://localhost:3000/getCareers"
+          // "http://localhost:5000/getCareers"
         );
         // const response = await fetch("http://localhost:3000/getCareers");
         if (!response.ok) {
@@ -50,7 +50,7 @@ const CareerDetails = () => {
     try {
       const response = await fetch(
         `https://rrplserver.rajavrukshagroup.in/deleteCareer/${careerToDelete}`,
-        // `http://localhost:3000/deleteCareer/${careerToDelete}`,
+        // `http://localhost:5000/deleteCareer/${careerToDelete}`,
         {
           method: "DELETE",
         }
