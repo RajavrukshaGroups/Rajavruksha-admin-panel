@@ -15,7 +15,7 @@ const UserList = () => {
       try {
         const response = await fetch(
           `https://rrplserver.rajavrukshagroup.in/getUserByDesignation?designation=${designation}`
-          // `http://localhost:3000/getUserByDesignation?designation=${designation}`
+          // `http://localhost:5000/getUserByDesignation?designation=${designation}`
         );
         const data = await response.json();
         console.log("data-users", data);
@@ -39,8 +39,7 @@ const UserList = () => {
     try {
       const response = await fetch(
         `https://rrplserver.rajavrukshagroup.in/deleteSubmittedFormData/${userToDelete}`,
-        // `http://localhost:3000/deleteSubmittedFormData/${userToDelete}`,
-
+        // `http://localhost:5000/deleteSubmittedFormData/${userToDelete}`,
         {
           method: "DELETE",
         }

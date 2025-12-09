@@ -14,7 +14,7 @@ const CareerIndDetailPage = () => {
       try {
         const response = await fetch(
           `https://rrplserver.rajavrukshagroup.in/getIndCareer/${id}`
-          // `http://localhost:3000/getIndCareer/${id}`
+          // `http://localhost:5000/getIndCareer/${id}`
         );
         if (!response.ok) {
           throw new Error("Failed to fetch career details");
@@ -44,7 +44,7 @@ const CareerIndDetailPage = () => {
     try {
       const response = await fetch(
         `https://rrplserver.rajavrukshagroup.in/deleteCareer/${id}`,
-        // `http://localhost:3000/deleteCareer/${id}`,
+        // `http://localhost:5000/deleteCareer/${id}`,
         {
           method: "DELETE",
         }

@@ -35,7 +35,7 @@ const EditCareerComponent = () => {
       try {
         const response = await fetch(
           `https://rrplserver.rajavrukshagroup.in/getIndCareer/${id}`
-          // `http://localhost:3000/getIndCareer/${id}`
+          // `http://localhost:5000/getIndCareer/${id}`
         );
         if (response.ok) {
           const result = await response.json();
@@ -164,7 +164,7 @@ const EditCareerComponent = () => {
     try {
       const response = await fetch(
         `https://rrplserver.rajavrukshagroup.in/edit-career/${id}`,
-        // `http://localhost:3000/edit-career/${id}`,
+        // `http://localhost:5000/edit-career/${id}`,
         {
           method: "PUT",
           body: updatedFormData,
