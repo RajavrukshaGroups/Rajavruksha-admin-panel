@@ -37,7 +37,6 @@ const BusinessDevelopmentExecutiveIntern = () => {
       const response = await fetch(
         `https://rrplserver.rajavrukshagroup.in/deleteSubmittedFormData/${selectedUserId}`,
         // `https://localhost:5000/deleteSubmittedFormData/${selectedUserId}`,
-
         {
           method: "DELETE",
         }
