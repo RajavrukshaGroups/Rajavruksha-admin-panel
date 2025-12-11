@@ -89,6 +89,7 @@ const ViewAdminEmployees = () => {
   const [hra, setHRA] = useState("");
   const [trAllowance, setTrAllowance] = useState("");
   const [specialAllowance, setSpecialAllowance] = useState("");
+  const [foodAllowance, setFoodAllowance] = useState("");
 
   // --- NEW fields requested by you ---
   const [nameAsPerAadhar, setNameAsPerAadhar] = useState("");
@@ -227,6 +228,7 @@ const ViewAdminEmployees = () => {
     setHRA("");
     setTrAllowance("");
     setSpecialAllowance("");
+    setFoodAllowance("");
     setEmail("");
     setMobileNumber("");
 
@@ -268,7 +270,7 @@ const ViewAdminEmployees = () => {
 
   // open modal for edit (prefill)
   const openEditModal = (emp) => {
-    console.log("emp",emp)
+    console.log("emp", emp);
     setFormError(null);
     setIsEditing(true);
     setEditingEmployeeId(emp._id);
@@ -290,6 +292,7 @@ const ViewAdminEmployees = () => {
     setHRA(String(emp.hra ?? ""));
     setTrAllowance(String(emp.trAllowance ?? ""));
     setSpecialAllowance(String(emp.specialAllowance ?? ""));
+    setFoodAllowance(String(emp.foodAllowance ?? ""));
     setEmail(emp.email ?? "");
     setMobileNumber(emp.mobileNumber ?? "");
 
@@ -453,6 +456,7 @@ const ViewAdminEmployees = () => {
       payload.hra = asTrimmed(hra);
       payload.trAllowance = asTrimmed(trAllowance);
       payload.specialAllowance = asTrimmed(specialAllowance);
+      payload.foodAllowance = asTrimmed(foodAllowance);
 
       payload.mobileNumber = mobileTrim;
       payload.email = asTrimmed(email);
@@ -737,6 +741,8 @@ const ViewAdminEmployees = () => {
                         Travel Allowance: {e.trAllowance ?? "-"}
                         <br />
                         Special Allowance: {e.specialAllowance ?? "-"}
+                        <br />
+                        Food Allowance:{e.foodAllowance ?? "-"}
                         <br />
                         Email: {e.email ?? "-"}
                         <br />
@@ -1574,6 +1580,18 @@ const ViewAdminEmployees = () => {
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Food Allowance
+                      </label>
+                      <input
+                        type="number"
+                        value={foodAllowance}
+                        onChange={(e) => setFoodAllowance(e.target.value)}
+                        className="w-full p-2 border rounded"
+                        disabled={submitting}
+                      />
+                    </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Special Allowance
