@@ -80,6 +80,7 @@ const AdminViewSalary = () => {
     trAllowance: "",
     specialAllowance: "",
     foodAllowance: "",
+    uniformRefund: "",
     vda: "",
     epf: "",
     esic: "",
@@ -223,6 +224,7 @@ const AdminViewSalary = () => {
       trAllowance: "",
       specialAllowance: "",
       foodAllowance: "",
+      uniformRefund: "",
       vda: "",
       epf: "",
       esic: "",
@@ -255,6 +257,8 @@ const AdminViewSalary = () => {
             : "";
         baseForm.foodAllowance =
           defaults.foodAllowance != null ? String(defaults.foodAllowance) : "";
+        baseForm.uniformRefund =
+          defaults.uniformRefund != null ? String(defaults.uniformRefund) : "";
       }
     } catch (err) {
       // silent fallback — do not block UI
@@ -306,6 +310,7 @@ const AdminViewSalary = () => {
       specialAllowance:
         salary.specialAllowance ?? salary.specialAllowance_enc ?? "",
       foodAllowance: salary.foodAllowance ?? salary.foodAllowance_enc ?? "",
+      uniformRefund: salary.uniformRefund ?? salary.uniformRefund_enc ?? "",
       vda: salary.vda ?? salary.vda_enc ?? "",
       epf: salary.epf ?? salary.epf_enc ?? "",
       esic: salary.esic ?? salary.esic_enc ?? "",
@@ -369,6 +374,7 @@ const AdminViewSalary = () => {
       trAllowance: Number(form.trAllowance || 0),
       specialAllowance: Number(form.specialAllowance || 0),
       foodAllowance: Number(form.foodAllowance || 0),
+      uniformRefund: Number(form.uniformRefund || 0),
       vda: Number(form.vda || 0),
       epf: Number(form.epf || 0),
       esic: Number(form.esic || 0),
@@ -766,6 +772,13 @@ const AdminViewSalary = () => {
                       {inputField(
                         "Food Allowance",
                         "foodAllowance",
+                        form,
+                        onFormChange,
+                        submitting
+                      )}
+                      {inputField(
+                        "Uniform Refund",
+                        "uniformRefund",
                         form,
                         onFormChange,
                         submitting

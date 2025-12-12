@@ -90,6 +90,7 @@ const ViewAdminEmployees = () => {
   const [trAllowance, setTrAllowance] = useState("");
   const [specialAllowance, setSpecialAllowance] = useState("");
   const [foodAllowance, setFoodAllowance] = useState("");
+  const [uniformRefund, setUniformRefund] = useState("");
 
   // --- NEW fields requested by you ---
   const [nameAsPerAadhar, setNameAsPerAadhar] = useState("");
@@ -229,6 +230,7 @@ const ViewAdminEmployees = () => {
     setTrAllowance("");
     setSpecialAllowance("");
     setFoodAllowance("");
+    setUniformRefund("");
     setEmail("");
     setMobileNumber("");
 
@@ -293,6 +295,7 @@ const ViewAdminEmployees = () => {
     setTrAllowance(String(emp.trAllowance ?? ""));
     setSpecialAllowance(String(emp.specialAllowance ?? ""));
     setFoodAllowance(String(emp.foodAllowance ?? ""));
+    setUniformRefund(String(emp.uniformRefund ?? ""));
     setEmail(emp.email ?? "");
     setMobileNumber(emp.mobileNumber ?? "");
 
@@ -457,6 +460,7 @@ const ViewAdminEmployees = () => {
       payload.trAllowance = asTrimmed(trAllowance);
       payload.specialAllowance = asTrimmed(specialAllowance);
       payload.foodAllowance = asTrimmed(foodAllowance);
+      payload.uniformRefund = asTrimmed(uniformRefund);
 
       payload.mobileNumber = mobileTrim;
       payload.email = asTrimmed(email);
@@ -743,6 +747,8 @@ const ViewAdminEmployees = () => {
                         Special Allowance: {e.specialAllowance ?? "-"}
                         <br />
                         Food Allowance:{e.foodAllowance ?? "-"}
+                        <br />
+                        Uniform Refund:{e.uniformRefund ?? "-"}
                         <br />
                         Email: {e.email ?? "-"}
                         <br />
@@ -1600,6 +1606,18 @@ const ViewAdminEmployees = () => {
                         type="number"
                         value={specialAllowance}
                         onChange={(e) => setSpecialAllowance(e.target.value)}
+                        className="w-full p-2 border rounded"
+                        disabled={submitting}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Uniform Refund
+                      </label>
+                      <input
+                        type="number"
+                        value={uniformRefund}
+                        onChange={(e) => setUniformRefund(e.target.value)}
                         className="w-full p-2 border rounded"
                         disabled={submitting}
                       />
