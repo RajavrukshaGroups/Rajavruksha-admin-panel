@@ -37,6 +37,7 @@ const MONTH_NAMES = [
 const ViewAdminEmployees = () => {
   const { companyId, deptId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [sharingCred, setSharingCred] = useState([]);
   const navigate = useNavigate();
 
   // core state
@@ -640,6 +641,48 @@ const ViewAdminEmployees = () => {
   const years = [];
   for (let y = nowYear - 5; y <= nowYear + 1; y++) years.push(y);
 
+  // SHARE LOGIN CREDENTIALS
+  const handleShareCredentials = async (empId) => {
+    if (!empId) return;
+
+    const confirmSend = window.confirm(
+      "This will generate a new password and email it to the employee. Continue?"
+    );
+    if (!confirmSend) return;
+
+    // mark as sharing immediately
+    setSharingCred((prev) => [...prev, empId]);
+
+    try {
+      const res = await fetch(
+        `${API_BASE}/admin/companies/${companyId}/departments/${deptId}/employees/${empId}/share-credentials`,
+        {
+          method: "POST",
+        }
+      );
+
+      const json = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        const msg =
+          json?.message || `Failed to share credentials (${res.status})`;
+        toast.error(msg);
+        return;
+      }
+
+      toast.success(json.message || "Login credentials sent successfully");
+
+      // refresh list (to reflect credentialsSent flag)
+      await fetchEmployees(page, limit);
+    } catch (err) {
+      console.error("share credentials error:", err);
+      toast.error(err.message || "Server error while sharing credentials");
+    } finally {
+      // remove sharing state
+      setSharingCred((prev) => prev.filter((id) => id !== empId));
+    }
+  };
+
   return (
     <div>
       <MainHeader />
@@ -793,6 +836,19 @@ const ViewAdminEmployees = () => {
                             className="px-2 py-1 rounded bg-blue-600 text-white hover:bg-blue-700"
                           >
                             View
+                          </button>
+                          <button
+                            onClick={() => handleShareCredentials(e._id)}
+                            disabled={sharingCred.includes(e._id)}
+                            className={`px-2 py-1 rounded text-white ${
+                              sharingCred.includes(e._id)
+                                ? "bg-gray-400 cursor-not-allowed"
+                                : "bg-green-600 hover:bg-green-700"
+                            }`}
+                          >
+                            {sharingCred.includes(e._id)
+                              ? "Sharing..."
+                              : "Share Credentials"}
                           </button>
                         </div>
                       </td>
