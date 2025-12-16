@@ -14,6 +14,7 @@ const EditCompanyDetails = () => {
   const [companyName, setCompanyName] = useState("");
   const [companyAddress, setCompanyAddress] = useState("");
   const [companyEmail, setCompanyEmail] = useState("");
+  const [companyShortCode, setCompanyShortCode] = useState("");
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -47,6 +48,7 @@ const EditCompanyDetails = () => {
           setCompanyName(c.companyName || "");
           setCompanyAddress(c.companyAddress || "");
           setCompanyEmail(c.companyEmail || "");
+          setCompanyShortCode(c.companyShortCode || "");
           if (c.companyLogo) {
             setPreview(c.companyLogo.url || c.companyLogo);
           }
@@ -104,6 +106,7 @@ const EditCompanyDetails = () => {
     setCompanyName("");
     setCompanyAddress("");
     setCompanyEmail("");
+    setCompanyShortCode("");
     setFile(null);
     setPreview(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -126,6 +129,12 @@ const EditCompanyDetails = () => {
       showError(errMsg);
       return;
     }
+    if (!companyShortCode.trim()) {
+      const errMsg = "Company short code is required";
+      setError(errMsg);
+      showError(errMsg);
+      return;
+    }
     if (!companyEmail.trim()) {
       const errMsg = "Company email is required.";
       setError(errMsg);
@@ -136,6 +145,7 @@ const EditCompanyDetails = () => {
     const formData = new FormData();
     formData.append("companyName", companyName.trim());
     formData.append("companyAddress", companyAddress.trim());
+    formData.append("companyShortCode", companyShortCode.trim());
     formData.append("companyEmail", companyEmail.trim());
 
     if (file) formData.append("image", file);
@@ -230,6 +240,19 @@ const EditCompanyDetails = () => {
               type="text"
               value={companyName}
               onChange={(e) => setCompanyName(e.target.value)}
+              className="w-full p-2 border rounded"
+              disabled={submitting}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Company Short Code
+            </label>
+            <input
+              type="text"
+              value={companyShortCode}
+              onChange={(e) => setCompanyShortCode(e.target.value)}
               className="w-full p-2 border rounded"
               disabled={submitting}
             />

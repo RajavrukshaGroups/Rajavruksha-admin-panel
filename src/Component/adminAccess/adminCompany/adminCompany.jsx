@@ -12,6 +12,7 @@ const AdminCompany = () => {
   const [companyName, setCompanyName] = useState("");
   const [companyAddress, setCompanyAddress] = useState("");
   const [companyEmail, setCompanyEmail] = useState("");
+  const [companyShortCode, setCompanyShortCode] = useState("");
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -54,6 +55,7 @@ const AdminCompany = () => {
   const resetForm = () => {
     setCompanyName("");
     setCompanyAddress("");
+    setCompanyShortCode("");
     setCompanyEmail("");
     setFile(null);
     setPreview(null);
@@ -77,6 +79,11 @@ const AdminCompany = () => {
       toast.error("Company address is required.");
       return;
     }
+    if (!companyShortCode.trim()) {
+      setError("Company Short code is required");
+      toast.error("Company Short code is required");
+      return;
+    }
     if (!companyEmail.trim()) {
       setError("Company email is required.");
       toast.error("Company email is required.");
@@ -92,6 +99,7 @@ const AdminCompany = () => {
     const formData = new FormData();
     formData.append("companyName", companyName.trim());
     formData.append("companyAddress", companyAddress.trim());
+    formData.append("companyShortCode", companyShortCode.trim());
     formData.append("companyEmail", companyEmail.trim());
 
     // important: backend expects field name "image"
@@ -169,6 +177,19 @@ const AdminCompany = () => {
               onChange={(e) => setCompanyName(e.target.value)}
               className="w-full p-2 border rounded"
               placeholder="Enter company name"
+              disabled={submitting}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Company Short Code
+            </label>
+            <input
+              type="text"
+              value={companyShortCode}
+              onChange={(e) => setCompanyShortCode(e.target.value)}
+              className="w-full p-2 border rounded"
+              placeholder="Enter company short code"
               disabled={submitting}
             />
           </div>
