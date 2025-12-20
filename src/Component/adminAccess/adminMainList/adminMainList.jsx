@@ -55,12 +55,16 @@ const formatDate = (isoDate) => {
 const AdminCompaniesList = () => {
   const navigate = useNavigate();
   const [companies, setCompanies] = useState([]);
+  const [uploadingEmployees, setUploadingEmployees] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const [totalEmployees, setTotalEmployees] = useState(null);
+  const [deletingEmployees, setDeletingEmployees] = useState(false);
 
   useEffect(() => {
     fetchCompanies();
+    fetchTotalEmployees();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -79,6 +83,37 @@ const AdminCompaniesList = () => {
       toast.error(err.message || "Failed to fetch companies");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleUploadEmployees = async () => {
+    const confirmUpload = window.confirm(
+      "This will upload employee records from Google Sheet. Continue?"
+    );
+    if (!confirmUpload) return;
+
+    try {
+      setUploadingEmployees(true);
+
+      const res = await fetch(`${API_BASE}/bulk/admin/upload-employeeRecords`, {
+        method: "POST",
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error(data?.message || "Employee upload failed");
+      }
+
+      toast.success(data?.message || "Employee records uploaded successfully");
+
+      // Optional: you may refresh companies if needed
+      // fetchCompanies();
+    } catch (err) {
+      console.error("Upload employees error:", err);
+      toast.error(err.message || "Failed to upload employees");
+    } finally {
+      setUploadingEmployees(false);
     }
   };
 
@@ -127,6 +162,48 @@ const AdminCompaniesList = () => {
     navigate(`/admin/view-employees?companyId=${companyId}`);
   };
 
+  const fetchTotalEmployees = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/admin/total-employees`);
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setTotalEmployees(data.totalEmployees);
+      }
+    } catch (err) {
+      console.error("failed to fetch total employees:", err);
+    }
+  };
+
+  const handleDeleteEmployees = async () => {
+    const confirmDelete = window.confirm(
+      "this will delete all employee records.continue?"
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      setDeletingEmployees(true);
+      const res = await fetch(
+        `${API_BASE}/bulk/admin/delete-uploaded-employeedata`,
+        { method: "DELETE" }
+      );
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) {
+        throw new Error(data?.message || "failed to delete employees");
+      }
+      toast.success(
+        `Deleted ${data.deletedCount || 0} employee records successfully`
+      );
+      fetchTotalEmployees();
+    } catch (err) {
+      console.error("Delete employees error:", err);
+      toast.error(err.message || "Failed to delete employees");
+    } finally {
+      setDeletingEmployees(false);
+    }
+  };
+
   return (
     <div className="min-h-[60vh] max-w-7xl mx-auto p-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
@@ -138,6 +215,96 @@ const AdminCompaniesList = () => {
         </div>
 
         <div className="flex gap-3">
+          <button
+            onClick={handleUploadEmployees}
+            disabled={uploadingEmployees}
+            className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            aria-label="Upload Employees"
+          >
+            {uploadingEmployees ? (
+              <>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 animate-spin"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8" />
+                </svg>
+                Uploading...
+              </>
+            ) : (
+              <>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 16V4m0 0l-4 4m4-4l4 4M4 20h16"
+                  />
+                </svg>
+                Upload Employees
+              </>
+            )}
+          </button>
+
+          {totalEmployees !== null && (
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium bg-gray-100 text-gray-700 px-3 py-2 rounded-lg border">
+                Total Employees: <strong>{totalEmployees}</strong>
+              </span>
+
+              <button
+                onClick={handleDeleteEmployees}
+                disabled={deletingEmployees}
+                className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg text-sm shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                aria-label="Delete Employees"
+              >
+                {deletingEmployees ? (
+                  <>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4 animate-spin"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8" />
+                    </svg>
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={1.5}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                    Delete Employees
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+
           <button
             onClick={() => navigate("/admin/company")}
             className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors"
