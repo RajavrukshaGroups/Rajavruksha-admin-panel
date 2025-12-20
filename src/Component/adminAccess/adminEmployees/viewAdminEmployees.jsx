@@ -105,6 +105,7 @@ const ViewAdminEmployees = () => {
   const [currentAddress, setCurrentAddress] = useState("");
   const [permanentAddress, setPermanentAddress] = useState("");
   const [bloodGroup, setBloodGroup] = useState("");
+  const [pendingDocuments, setPendingDocuments] = useState("");
   // marital as text + boolean
   const [maritalStatus, setMaritalStatus] = useState(""); // "married"/"unmarried"
   const [isMarried, setIsMarried] = useState(false);
@@ -237,7 +238,7 @@ const ViewAdminEmployees = () => {
 
     // new field resets
     setNameAsPerAadhar("");
-    setStatus("working");
+    setStatus("Working");
     setStatusWorking(true);
     setDateOfBirth("");
     setDateOfExit("");
@@ -246,7 +247,8 @@ const ViewAdminEmployees = () => {
     setCurrentAddress("");
     setPermanentAddress("");
     setBloodGroup("");
-    setMaritalStatus("unmarried");
+    setPendingDocuments("");
+    setMaritalStatus("Unmarried");
     setIsMarried(false);
     setFatherName("");
     setFatherDOB("");
@@ -305,10 +307,10 @@ const ViewAdminEmployees = () => {
     // prefer boolean if backend already stores boolean; else infer from string
     if (typeof emp.status === "boolean") {
       setStatusWorking(Boolean(emp.status));
-      setStatus(emp.status ? "working" : "not_working");
+      setStatus(emp.status ? "Working" : "Not Working");
     } else {
-      setStatus(emp.status ?? "working");
-      setStatusWorking((emp.status ?? "working") === "working");
+      setStatus(emp.status ?? "Working");
+      setStatusWorking((emp.status ?? "Working") === "Working");
     }
 
     setDateOfBirth(isoToInputDate(emp.dateOfBirth));
@@ -318,12 +320,13 @@ const ViewAdminEmployees = () => {
     setCurrentAddress(emp.currentAddress ?? "");
     setPermanentAddress(emp.permanentAddress ?? "");
     setBloodGroup(emp.bloodGroup ?? "");
+    setPendingDocuments(emp.pendingDocuments ?? "");
     if (typeof emp.maritalStatus === "boolean") {
       setIsMarried(Boolean(emp.maritalStatus));
-      setMaritalStatus(emp.maritalStatus ? "married" : "unmarried");
+      setMaritalStatus(emp.maritalStatus ? "Married" : "Unmarried");
     } else {
-      setMaritalStatus(emp.maritalStatus ?? "unmarried");
-      setIsMarried((emp.maritalStatus ?? "unmarried") === "married");
+      setMaritalStatus(emp.maritalStatus ?? "Unmarried");
+      setIsMarried((emp.maritalStatus ?? "Unmarried") === "Married");
     }
 
     setFatherName(emp.fatherName ?? "");
@@ -413,7 +416,7 @@ const ViewAdminEmployees = () => {
       payload.nameAsPerAadhar = asTrimmed(nameAsPerAadhar);
 
       // status: keep string and boolean flag for backend compatibility
-      payload.status = statusWorking ? "working" : "not_working";
+      payload.status = statusWorking ? "Working" : "Not Working";
       payload.statusWorking = Boolean(statusWorking);
 
       payload.PAN = asTrimmed(PAN); // backend will encrypt
@@ -421,9 +424,10 @@ const ViewAdminEmployees = () => {
       payload.currentAddress = asTrimmed(currentAddress);
       payload.permanentAddress = asTrimmed(permanentAddress);
       payload.bloodGroup = asTrimmed(bloodGroup);
+      payload.pendingDocuments = asTrimmed(pendingDocuments);
 
       // marital: both string & boolean
-      payload.maritalStatus = isMarried ? "married" : "unmarried";
+      payload.maritalStatus = isMarried ? "Married" : "Unmarried";
       payload.isMarried = Boolean(isMarried);
 
       payload.fatherName = asTrimmed(fatherName);
@@ -808,6 +812,8 @@ const ViewAdminEmployees = () => {
                         <br />
                         Nominee: {e.nomineeName ?? "-"} (
                         {e.nomineeRelationship ?? "-"})
+                        <br />
+                        Pending Documents: {e.pendingDocuments ?? "-"}
                       </td>
                       <td className="px-3 py-2">
                         <div className="flex gap-2">
@@ -1078,7 +1084,7 @@ const ViewAdminEmployees = () => {
                             checked={statusWorking === true}
                             onChange={() => {
                               setStatusWorking(true);
-                              setStatus("working");
+                              setStatus("Working");
                             }}
                           />
                           <span>Working</span>
@@ -1090,7 +1096,7 @@ const ViewAdminEmployees = () => {
                             checked={statusWorking === false}
                             onChange={() => {
                               setStatusWorking(false);
-                              setStatus("not_working");
+                              setStatus("Not Working");
                             }}
                           />
                           <span>Not working</span>
@@ -1111,7 +1117,7 @@ const ViewAdminEmployees = () => {
                             checked={isMarried === true}
                             onChange={() => {
                               setIsMarried(true);
-                              setMaritalStatus("married");
+                              setMaritalStatus("Married");
                             }}
                           />
                           <span>Married</span>
@@ -1123,7 +1129,7 @@ const ViewAdminEmployees = () => {
                             checked={isMarried === false}
                             onChange={() => {
                               setIsMarried(false);
-                              setMaritalStatus("unmarried");
+                              setMaritalStatus("Unmarried");
                             }}
                           />
                           <span>Unmarried</span>
@@ -1578,6 +1584,18 @@ const ViewAdminEmployees = () => {
                             type="text"
                             value={bloodGroup}
                             onChange={(e) => setBloodGroup(e.target.value)}
+                            className="w-full p-2 border rounded"
+                            disabled={submitting}
+                          />
+                          <label className="block text-sm font-medium text-gray-700 mb-1 mt-2">
+                            Pending Documents
+                          </label>
+                          <input
+                            type="text"
+                            value={pendingDocuments}
+                            onChange={(e) =>
+                              setPendingDocuments(e.target.value)
+                            }
                             className="w-full p-2 border rounded"
                             disabled={submitting}
                           />
