@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-// const API_BASE = "http://localhost:5000";
+//const API_BASE = "http://localhost:5000";
 const API_BASE = "https://rrplserver.rajavrukshagroup.in";
 
 const PlaceholderLogo = ({ size = 80 }) => (
@@ -410,7 +410,14 @@ const AdminCompaniesList = () => {
         </div>
       ) : (
         <div className="grid gap-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-          {companies.map((c) => (
+          
+          {companies.filter(
+      (c) =>
+        ![
+          "68fe070198127e0b9f5ce186",
+          "68fe0c0198127e0b9f5ce18e",
+        ].includes(String(c._id))
+    ).map((c) => (
             <div
               key={c._id}
               className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all duration-200 flex flex-col h-full"
